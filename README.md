@@ -5,12 +5,12 @@
 
 
 ## 使用
-- [!Libs](#) - 下载并安装插件
-- [ShaguPlates](https://github.com/xhwsd/ShaguPlates/) - [下载](https://ghgo.xyz/https://github.com/xhwsd/ShaguPlates/archive/master.zip)并安装插件
-- [SuperMacro](https://github.com/xhwsd/SuperMacro/) - [下载](https://ghgo.xyz/https://github.com/xhwsd/SuperMacro/archive/master.zip)并安装插件（可选的）
-- [DaruidBird](https://github.com/xhwsd/DaruidBird/) - [下载](https://ghgo.xyz/https://github.com/xhwsd/DaruidBird/archive/master.zip)并安装插件
-- 创建宏 - 基于插件提供的函数，创建普通或超级宏
-- 使用宏 - 将宏图标拖至动作条，然后使用宏
+- 安装[!Libs](#)插件
+- 安装[ShaguPlates](https://ghgo.xyz/https://github.com/xhwsd/ShaguPlates/archive/master.zip)插件
+- 可选的，安装[SuperMacro](https://ghgo.xyz/https://github.com/xhwsd/SuperMacro/archive/master.zip)插件
+- 安装[DaruidBird](https://ghgo.xyz/https://github.com/xhwsd/DaruidBird/archive/master.zip)插件
+- 基于插件提供的函数，创建普通或超级宏
+- 将宏图标拖至动作条，然后使用宏
 
 > 请确保插件最新版和已适配乌龟，插件目录如`.\TurtleWOW\AddOns\`
 
