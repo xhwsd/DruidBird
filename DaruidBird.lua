@@ -85,7 +85,7 @@ function DaruidBird:SpecialEvents_UnitBuffGained(unit, buff)
 	-- 无等待
 	eclipse.waiting = 0
 
-	-- 取消计划事件
+	-- 取消延迟事件
 	if self:IsEventScheduled("DaruidBird_WaitTimeout") then
 		self:CancelScheduledEvent("DaruidBird_WaitTimeout")
 	end
@@ -108,15 +108,15 @@ function DaruidBird:SpecialEvents_UnitBuffLost(unit, buff)
 	-- 等待时间
 	eclipse.waiting = GetTime() +  eclipse.waits[buff]
 
-	-- 取消计划事件
+	-- 取消已有延迟事件
 	if self:IsEventScheduled("DaruidBird_WaitTimeout") then
 		self:CancelScheduledEvent("DaruidBird_WaitTimeout")
 	end
 
-	-- 计划事件
+	-- 延迟触发事件
 	self:ScheduleEvent("DaruidBird_WaitTimeout", self.DaruidBird_WaitTimeout, eclipse.waits[buff], self)
 
-	self:LevelDebug(3, "失去增益；效果：%s；超时：%d", buff, eclipse.waiting)
+	self:LevelDebug(3, "失去增益；效果：%s；等待：%d", buff, eclipse.waits[buff])
 end
 
 -- 等待超时
@@ -142,15 +142,20 @@ function DaruidBird:CanDebuff(debuff, unit)
 		return true
 	end
 
-	-- 偷懒摆烂
-	-- 需确保插件适配乌龟服，如：debuff位数、debuff持续时间等
-	local debuffLib
-	if ShaguPlates.api.libdebuff then
+	-- 偷懒摆烂；需确保插件适配乌龟服，如：debuff位数、debuff持续时间等
+	local lib
+	if ShaguPlates then
 		-- 依赖 ShaguPlates 插件
-		debuffLib = ShaguPlates.api.libdebuff
-	elseif ShaguTweaks.libdebuff then
+		lib = ShaguPlates.api.libdebuff
+	elseif ShaguTweaks then
 		-- 依赖 ShaguTweaks 插件
-		debuffLib = ShaguTweaks.libdebuff
+		lib = ShaguTweaks.libdebuff
+	elseif ShaguTweaks then
+		-- 依赖 ShaguTweaks 插件
+		lib = ShaguTweaks.libdebuff
+	elseif pfUI then
+		-- 依赖 pfUI 插件
+		lib = pfUI.api.libdebuff
 	else
 		-- 无法判断，不可施法
 		return false
@@ -160,7 +165,7 @@ function DaruidBird:CanDebuff(debuff, unit)
 	for index = 1, 64 do
 		-- 匹配减益
 		-- 效果名称, 法术等级, 图标纹理, 效果层数, 减益类型, 持续时间, 结束时间
-		if debuffLib:UnitDebuff(unit, index) == debuff then
+		if lib:UnitDebuff(unit, index) == debuff then
 			-- 不可施法
 			return false
 		end
