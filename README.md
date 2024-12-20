@@ -5,7 +5,7 @@
 
 
 ## 使用
-- 安装[!Libs](#)插件
+- 安装`!Libs`插件
 - 安装[ShaguPlates](https://ghgo.xyz/https://github.com/xhwsd/ShaguPlates/archive/master.zip)插件
 - 可选的，安装[SuperMacro](https://ghgo.xyz/https://github.com/xhwsd/SuperMacro/archive/master.zip)插件
 - 安装[DaruidBird](https://ghgo.xyz/https://github.com/xhwsd/DaruidBird/archive/master.zip)插件
