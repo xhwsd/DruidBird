@@ -1,6 +1,8 @@
 -- 非德鲁伊退出运行
 local _, playerClass = UnitClass("player")
-if playerClass ~= "DRUID" then return end
+if playerClass ~= "DRUID" then
+	return
+end
 
 -- 定义插件
 DaruidBird = AceLibrary("AceAddon-2.0"):new(
