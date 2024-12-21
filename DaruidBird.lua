@@ -35,11 +35,11 @@ local eclipse = {
 -- 插件载入
 function DaruidBird:OnInitialize()
 	-- 精简标题
-	self.title = "ND"
+	self.title = "鸟德辅助"
 	-- 开启调试
-	self:SetDebugging(false)
-	-- 输出等级
-	self:SetDebugLevel(3)
+	self:SetDebugging(true)
+	-- 调试等级
+	self:SetDebugLevel(2)
 end
 
 -- 插件打开
@@ -47,15 +47,24 @@ function DaruidBird:OnEnable()
 	self:LevelDebug(3, "插件打开")
 
 	-- 注册命令
-	self:RegisterChatCommand({'/DaruidBird', "/ND"}, {
+	self:RegisterChatCommand({'/NDFZ', "/DaruidBird"}, {
 		type = "group",
 		args = {
-			level = {
-				name = "level",
-				desc = "调试等级",
+			tsms = {
+				name = "调试模式",
+				desc = "开启或关闭调试模式",
 				type = "toggle",
+				get = "IsDebugging",
+				set = "SetDebugging"
+			},
+			tsdj = {
+				name = "调试等级",
+				desc = "设置或获取调试等级",
+				type = "range",
+				min = 1,
+				max = 3,
 				get = "GetDebugLevel",
-				set = "SetDebugLevel",
+				set = "SetDebugLevel"
 			}
 		},
 	})
