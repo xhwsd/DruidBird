@@ -82,7 +82,7 @@ end
 -- 获得增益效果
 function DaruidBird:SpecialEvents_UnitBuffGained(unit, buff)
 	-- 仅限自身
-	if not UnitIsPlayer(unit) then
+	if not UnitIsUnit(unit, "player") then
 		return
 	end
 
@@ -107,7 +107,7 @@ end
 -- 失去增益效果
 function DaruidBird:SpecialEvents_UnitBuffLost(unit, buff)
 	-- 仅限自身
-	if not UnitIsPlayer(unit) then
+	if not UnitIsUnit(unit, "player") then
 		return
 	end
 
