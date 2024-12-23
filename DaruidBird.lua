@@ -206,29 +206,50 @@ function DaruidBird:Eclipse(kill)
 	-- 抉择法术
 	local health = math.floor(UnitHealth("target") / UnitHealthMax("target") * 100)
 	if health <= kill then
-		-- 斩杀阶段
+		-- 尽快斩杀
 		CastSpellByName("愤怒")
+	elseif self:GetState() == "日蚀" then
+		-- 自然伤害提高
+		if self:CanDebuff("虫群") then
+			-- 持续自然伤害
+			CastSpellByName("虫群")
+		elseif self:GetWaiting() > 0 and self:CanDebuff("月火术") then 
+			-- 无日蚀等待月蚀时，愤怒法力消耗降低
+			CastSpellByName("月火术")
+		else
+			-- 造成自然伤害，暴击获得月蚀
+			CastSpellByName("愤怒")
+		end
+	elseif self:GetState() == "月蚀" then
+		-- 奥术伤害提高
+		if self:CanDebuff("月火术") then
+			-- 持续奥术伤害
+			CastSpellByName("月火术")
+		elseif self:CanDebuff("虫群") then 
+			-- 星火施法时间缩短
+			CastSpellByName("虫群")
+		else
+			-- 造成奥术伤害，暴击获得日蚀
+			CastSpellByName("星火术")
+		end
 	elseif self:CanDebuff("虫群") then
-		-- 虫群：降低命中2%、持续18秒自然伤害
-		-- 虫群造成伤害后有30%几率获得万物平衡
+		-- 补虫群
 		CastSpellByName("虫群")
 	elseif self:CanDebuff("月火术") then
-		-- 月火术：立即伤害、持续18秒奥术伤害
-		-- 月火术造成伤害后有30%几率获得自然恩赐
+		-- 补月火
 		CastSpellByName("月火术")
-	elseif self:GetState() == "日蚀" then
-		-- 日蚀：增加25%自然伤害，持续15秒，冷却30秒
-		-- 愤怒造成致命一击后有概率获得月蚀
-		CastSpellByName("愤怒")
-	elseif self:GetState() == "月蚀" then
-		-- 月蚀：增加25%奥术伤害，持续15秒，冷却30秒
-		-- 万物平衡：下一次星火术施法时间减少0.5秒，可累积3次
-		-- 星火术造成致命一击后有概率获得日蚀
-		CastSpellByName("星火术")
 	else
-		-- 自然恩赐：愤怒法力值消耗降低
 		CastSpellByName("愤怒")
 	end
+
+	-- 愤怒：造成自然伤害；造成致命一击后有概率获得月蚀
+	-- 星火术：造成奥术伤害；造成致命一击后有概率获得日蚀
+	-- 月火术：立即伤害、持续18秒奥术伤害；造成伤害后有30%几率获得自然恩赐
+	-- 虫群：降低命中2%、持续18秒自然伤害；造成伤害后有30%几率获得万物平衡
+	-- 日蚀：增加25%自然伤害，持续15秒，冷却30秒
+	-- 月蚀：增加25%奥术伤害，持续15秒，冷却30秒
+	-- 万物平衡：下一次星火术施法时间减少0.5秒，可累积3次
+	-- 自然恩赐：愤怒法力消耗降低
 end
 
 -- 减伤：给目标上持续伤害法术，用于磨死BOSS等场景
