@@ -32,7 +32,7 @@ local eclipse = {
 	}
 }
 
--- 插件载入
+---插件载入
 function DaruidBird:OnInitialize()
 	-- 精简标题
 	self.title = "鸟德辅助"
@@ -42,7 +42,7 @@ function DaruidBird:OnInitialize()
 	self:SetDebugLevel(2)
 end
 
--- 插件打开
+---插件打开
 function DaruidBird:OnEnable()
 	self:LevelDebug(3, "插件打开")
 
@@ -74,12 +74,14 @@ function DaruidBird:OnEnable()
 	self:RegisterEvent("SpecialEvents_UnitBuffLost")
 end
 
--- 插件关闭
+---插件关闭
 function DaruidBird:OnDisable()
 	self:LevelDebug(3, "插件关闭")
 end
 
 -- 获得增益效果
+---@param unit string 事件单位
+---@param buff string 增益名称
 function DaruidBird:SpecialEvents_UnitBuffGained(unit, buff)
 	-- 仅限自身
 	if not UnitIsUnit(unit, "player") then
@@ -104,7 +106,9 @@ function DaruidBird:SpecialEvents_UnitBuffGained(unit, buff)
 	self:LevelDebug(3, "获得增益；效果：%s", buff)
 end
 
--- 失去增益效果
+---失去增益效果
+---@param unit string 事件单位
+---@param buff string 增益名称
 function DaruidBird:SpecialEvents_UnitBuffLost(unit, buff)
 	-- 仅限自身
 	if not UnitIsUnit(unit, "player") then
@@ -130,7 +134,7 @@ function DaruidBird:SpecialEvents_UnitBuffLost(unit, buff)
 	self:LevelDebug(3, "失去增益；效果：%s；等待：%d", buff, eclipse.waits[buff])
 end
 
--- 等待超时
+---等待超时
 function DaruidBird:DaruidBird_WaitTimeout()
 	self:LevelDebug(3, "等待超时；状态：%s", eclipse.state)
 
@@ -140,10 +144,10 @@ function DaruidBird:DaruidBird_WaitTimeout()
 	eclipse.waiting = 0
 end
 
--- 可否减益
--- @param string debuff 减益名称
--- @param string unit = "target" 目标单位
--- @return boolean 可否施法减益
+---可否减益
+---@param debuff string  减益名称
+---@param unit? string 目标单位
+---@return boolean can 可否施法减益
 function DaruidBird:CanDebuff(debuff, unit)
 	unit = unit or "target"
 
@@ -164,20 +168,20 @@ function DaruidBird:CanDebuff(debuff, unit)
 	end
 end
 
--- 取状态
--- @return string 为空字符串表示无状态
+---取状态
+---@return string state 为空字符串表示无状态
 function DaruidBird:GetState()
 	return eclipse.state
 end
 
--- 取等待
--- @return number 为0表示无等待
+---取等待
+---@return number waiting 为0表示无等待
 function DaruidBird:GetWaiting()
 	return eclipse.waiting
 end
 
--- 日食；根据自身增益输出法术
--- @param number kill = 10 斩杀阶段生命值百分比
+---日食；根据自身增益输出法术
+---@param kill? number 斩杀阶段生命值百分比
 function DaruidBird:Eclipse(kill)
 	kill = kill or 10
 
@@ -230,7 +234,7 @@ function DaruidBird:Eclipse(kill)
 	-- 自然恩赐：愤怒法力消耗降低
 end
 
--- 减伤：给目标上持续伤害法术，用于磨死BOSS等场景
+---减伤：给目标上持续伤害法术，用于磨死BOSS等场景
 function DaruidBird:Dot()
 	if not TarDebuff("虫群") then
 		-- 补虫群
@@ -241,7 +245,7 @@ function DaruidBird:Dot()
 	end
 end
 
--- 纠缠；中断施法，使用纠缠根须
+---纠缠；中断施法，使用纠缠根须
 function DaruidBird:Entangle()
 	-- 中断非纠缠根须施法
 	if castLib.isCasting and castLib.GetSpell() ~= "纠缠根须" then
@@ -249,4 +253,3 @@ function DaruidBird:Entangle()
 	end
 	CastSpellByName("纠缠根须")
 end
-
