@@ -29,7 +29,7 @@
 ```
 
 参数列表：
-- `@param number kill = 10` 斩杀阶段生命值百分比
+- `@param kill? number` 斩杀阶段生命值百分比
 
 逻辑描述：
 - 斩杀目标
