@@ -64,16 +64,6 @@
 ```
 
 
-#### 节能
-
-> 对附近进入战斗目标施法精灵之火（按下ALT释放最高级），以此触发节能效果
-
-```
-/script -- CastSpellByName("精灵之火")
-/script DaruidBird:EnergySaving()
-```
-
-
 ## 简单宏
 - `/ndfz tsms` - 调试模式：开启或关闭调试模式
 - `/ndfz tsdj [等级]` - 调试等级：设置或获取调试等级，等级取值范围`1~3`
