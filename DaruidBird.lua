@@ -176,7 +176,7 @@ function DaruidBird:UseItem(item, ...)
 		-- 任意增益
 		local buff = nil
 		for _, value in ipairs(arg) do
-			if MyBuff(value) then
+			if UnitHasAura("player", value) then
 				buff = value
 				break
 			end
@@ -312,7 +312,7 @@ end
 
 ---减伤：给目标上持续伤害法术，用于磨死BOSS等场景
 function DaruidBird:Dot()
-	if not TarDebuff("虫群") then
+	if not UnitHasAura("target", "虫群") then
 		-- 补虫群
 		CastSpellByName("虫群")
 	else
