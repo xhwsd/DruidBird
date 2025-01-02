@@ -25,11 +25,12 @@
 
 ```
 /script -- CastSpellByName("愤怒")
-/script DaruidBird:Eclipse(10)
+/script DaruidBird:Eclipse()
 ```
 
 参数列表：
-- `@param kill? number` 斩杀阶段生命值百分比
+- `@param kill? number` 斩杀阶段生命值百分比；缺省为`10`
+- `@param ... string` 欲在日蚀或月蚀使用的物品名称
 
 逻辑描述：
 - 斩杀目标
@@ -44,16 +45,6 @@
 > 日蚀或月蚀失去后会继续保持15秒，直到获得对应效果或超时退出等待  
 
 
-### 减伤
-
-> 给目标上持续伤害法术，用于磨死BOSS等场景
-
-```
-/script -- CastSpellByName("虫群")
-/script DaruidBird:Dot()
-```
-
-
 ### 纠缠
 
 > 立即打断施法，对目标施放纠缠根须
@@ -62,6 +53,29 @@
 /script -- CastSpellByName("纠缠根须")
 /script DaruidBird:Entangle()
 ```
+
+### 减伤
+
+> 给目标上持续伤害法术，用于磨死BOSS等场景
+
+```
+/script -- CastSpellByName("月火术")
+/script DaruidBird:Dot()
+```
+
+### 减益
+
+> 切换到战斗中的无减益目标，上减益
+
+```
+/script -- CastSpellByName("虫群")
+/script DaruidBird:Debuffs()
+```
+
+参数列表：
+- `@param limit? integer` 最多尝试切换目标次数；缺省为`30`
+- `@param ... string` 减益名称；缺省为`{"虫群", "月火术"}`
+- `@return string debuff` 施放的减益名称
 
 
 ## 简单宏

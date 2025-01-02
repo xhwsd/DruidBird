@@ -144,6 +144,62 @@ function DaruidBird:DaruidBird_WaitTimeout()
 	eclipse.waiting = 0
 end
 
+---使用物品
+---@param item string 欲使用物品的名称
+---@param ... string 限定使用物品的增益名称
+---@return boolean use 是否使用成功
+function DaruidBird:UseItem(item, ...)
+	if not item then
+		return false
+	end
+
+	-- TODO: 使用`FindItem()`，依赖超级宏插件
+
+	-- 查找物品
+	local bag, slot = FindItem(item)
+	if not bag then
+		return false
+	end
+
+	-- 包中物品冷却中
+	if slot and GetContainerItemCooldown(bag, slot) > 0 then
+		return false
+	end
+
+	-- 身上物品冷却中
+	if not slot and GetInventoryItemCooldown("player", bag) > 0 then
+		return false
+	end
+
+	-- 未检测到增益
+	if arg.n > 0 then
+		-- 任意增益
+		local buff = nil
+		for _, value in ipairs(arg) do
+			if MyBuff(value) then
+				buff = value
+				break
+			end
+		end
+		if not buff then
+			return false
+		end
+	end
+
+	-- 打断施法
+	SpellStopCasting()
+
+	-- 使用物品
+	if slot then
+		-- 使用包中的物品
+		UseContainerItem(bag, slot)
+	else
+		-- 使用身上的物品
+		UseInventoryItem(bag)
+	end
+	return true
+end
+
 ---可否减益
 ---@param debuff string  减益名称
 ---@param unit? string 目标单位
@@ -175,14 +231,15 @@ function DaruidBird:GetState()
 end
 
 ---取等待
----@return number waiting 为0表示无等待
+---@return number waiting 为`0`表示无等待
 function DaruidBird:GetWaiting()
 	return eclipse.waiting
 end
 
 ---日食；根据自身增益输出法术
----@param kill? number 斩杀阶段生命值百分比
-function DaruidBird:Eclipse(kill)
+---@param kill? number 斩杀阶段生命值百分比；缺省为`10`
+---@param ... string 欲在日蚀或月蚀使用的物品名称
+function DaruidBird:Eclipse(kill, ...)
 	kill = kill or 10
 
 	-- 抉择法术
@@ -190,38 +247,48 @@ function DaruidBird:Eclipse(kill)
 	if health <= kill then
 		-- 尽快斩杀
 		CastSpellByName("愤怒")
-	elseif self:GetState() == "日蚀" then
-		-- 自然伤害提高
-		if self:CanDebuff("虫群") then
-			-- 持续自然伤害
+	else
+		-- 使用物品
+		for _, item in ipairs(arg) do
+			if self:UseItem(item, "日蚀", "月蚀") then
+				return
+			end
+		end
+
+		-- 抉择施法
+		if self:GetState() == "日蚀" then
+			-- 自然伤害提高
+			if self:CanDebuff("虫群") then
+				-- 持续自然伤害
+				CastSpellByName("虫群")
+			elseif self:GetWaiting() > 0 and self:CanDebuff("月火术") then
+				-- 无日蚀等待月蚀时，愤怒法力消耗降低
+				CastSpellByName("月火术")
+			else
+				-- 造成自然伤害，暴击获得月蚀
+				CastSpellByName("愤怒")
+			end
+		elseif self:GetState() == "月蚀" then
+			-- 奥术伤害提高
+			if self:CanDebuff("月火术") then
+				-- 持续奥术伤害
+				CastSpellByName("月火术")
+			elseif self:CanDebuff("虫群") then
+				-- 星火施法时间缩短
+				CastSpellByName("虫群")
+			else
+				-- 造成奥术伤害，暴击获得日蚀
+				CastSpellByName("星火术")
+			end
+		elseif self:CanDebuff("虫群") then
+			-- 补虫群
 			CastSpellByName("虫群")
-		elseif self:GetWaiting() > 0 and self:CanDebuff("月火术") then 
-			-- 无日蚀等待月蚀时，愤怒法力消耗降低
+		elseif self:CanDebuff("月火术") then
+			-- 补月火
 			CastSpellByName("月火术")
 		else
-			-- 造成自然伤害，暴击获得月蚀
 			CastSpellByName("愤怒")
 		end
-	elseif self:GetState() == "月蚀" then
-		-- 奥术伤害提高
-		if self:CanDebuff("月火术") then
-			-- 持续奥术伤害
-			CastSpellByName("月火术")
-		elseif self:CanDebuff("虫群") then 
-			-- 星火施法时间缩短
-			CastSpellByName("虫群")
-		else
-			-- 造成奥术伤害，暴击获得日蚀
-			CastSpellByName("星火术")
-		end
-	elseif self:CanDebuff("虫群") then
-		-- 补虫群
-		CastSpellByName("虫群")
-	elseif self:CanDebuff("月火术") then
-		-- 补月火
-		CastSpellByName("月火术")
-	else
-		CastSpellByName("愤怒")
 	end
 
 	-- 愤怒：造成自然伤害；造成致命一击后有概率获得月蚀
@@ -232,6 +299,15 @@ function DaruidBird:Eclipse(kill)
 	-- 月蚀：增加25%奥术伤害，持续15秒，冷却30秒
 	-- 万物平衡：下一次星火术施法时间减少0.5秒，可累积3次
 	-- 自然恩赐：愤怒法力消耗降低
+end
+
+---纠缠；中断施法，使用纠缠根须
+function DaruidBird:Entangle()
+	-- 中断非纠缠根须施法
+	if castLib.isCasting and castLib.GetSpell() ~= "纠缠根须" then
+		SpellStopCasting()
+	end
+	CastSpellByName("纠缠根须")
 end
 
 ---减伤：给目标上持续伤害法术，用于磨死BOSS等场景
@@ -245,11 +321,37 @@ function DaruidBird:Dot()
 	end
 end
 
----纠缠；中断施法，使用纠缠根须
-function DaruidBird:Entangle()
-	-- 中断非纠缠根须施法
-	if castLib.isCasting and castLib.GetSpell() ~= "纠缠根须" then
-		SpellStopCasting()
+---减益：切换到战斗中的无减益目标，上减益
+---@param limit? integer 最多尝试切换目标次数；缺省为`30`
+---@param ... string 减益名称；缺省为`{"虫群", "月火术"}`
+---@return string debuff 施放的减益名称
+function DaruidBird:Debuffs(limit, ...)
+	limit = limit or 30
+	if arg.n <= 0 then
+		arg = {"虫群", "月火术"}
 	end
-	CastSpellByName("纠缠根须")
+
+	for index = 1, limit do
+		-- 可攻击和战斗中的目标
+		if UnitCanAttack("player", "target") and UnitAffectingCombat("target") then
+			for _, value in ipairs(arg) do
+				-- 可否施放减益
+				if self:CanDebuff(value) then
+					-- 施放减益
+					CastSpellByName(value)
+					return value
+				end
+			end
+		end
+
+		-- 切换目标
+		TargetNearestEnemy()
+
+		-- 切换后还是没目标
+		if not UnitExists("target") then
+			break
+		end
+	end
+	UIErrorsFrame:AddMessage("无可减益目标", 1.0, 1.0, 0.0, 53, 5)
 end
+
