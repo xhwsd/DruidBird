@@ -298,7 +298,7 @@ function DaruidBird:Eclipse(kill, ...)
 	-- 日蚀：增加25%自然伤害，持续15秒，冷却30秒
 	-- 月蚀：增加25%奥术伤害，持续15秒，冷却30秒
 	-- 万物平衡：下一次星火术施法时间减少0.5秒，可累积3次
-	-- 自然恩赐：愤怒法力消耗降低
+	-- 自然恩赐：下一次愤怒法力值消耗降低50%，可累积3次
 end
 
 ---纠缠；中断施法，使用纠缠根须
@@ -323,7 +323,7 @@ end
 
 ---减益：切换到战斗中的无减益目标，上减益
 ---@param limit? integer 最多尝试切换目标次数；缺省为`30`
----@param ... string 减益名称；缺省为`{"虫群", "月火术"}`
+---@param ... string 减益名称；缺省为`虫群`和`月火术`
 ---@return string debuff 施放的减益名称
 function DaruidBird:Debuffs(limit, ...)
 	limit = limit or 30

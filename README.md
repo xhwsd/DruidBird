@@ -74,7 +74,7 @@
 
 参数列表：
 - `@param limit? integer` 最多尝试切换目标次数；缺省为`30`
-- `@param ... string` 减益名称；缺省为`{"虫群", "月火术"}`
+- `@param ... string` 减益名称；缺省为`虫群`和`月火术`
 - `@return string debuff` 施放的减益名称
 
 
