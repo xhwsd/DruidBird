@@ -32,6 +32,47 @@ local eclipse = {
 	}
 }
 
+---物品链接到名称；来源：超级宏
+local function ItemLinkToName(link)
+	if link then
+   		return gsub(link, "^.*%[(.*)%].*$", "%1")
+	end
+end
+
+---寻找物品；来源：超级宏
+local function FindItem(item)
+	if not item then
+		return
+	end
+
+	item = string.lower(ItemLinkToName(item))
+	local link
+	for i = 1, 23 do
+		link = GetInventoryItemLink("player", i)
+		if link then
+			if item == string.lower(ItemLinkToName(link)) then
+				return i, nil, GetInventoryItemTexture('player', i), GetInventoryItemCount('player', i)
+			end
+		end
+	end
+
+	local count, bag, slot, texture
+	local totalcount = 0
+	for i = 0, NUM_BAG_FRAMES do
+		for j = 1, MAX_CONTAINER_ITEMS do
+			link = GetContainerItemLink(i, j)
+			if link then
+				if item == string.lower(ItemLinkToName(link)) then
+					bag, slot = i, j
+					texture, count = GetContainerItemInfo(i, j)
+					totalcount = totalcount + count
+				end
+			end
+		end
+	end
+	return bag, slot, texture, totalcount
+end
+
 ---插件载入
 function DaruidBird:OnInitialize()
 	-- 精简标题
@@ -153,8 +194,6 @@ function DaruidBird:UseItem(item, ...)
 		return false
 	end
 
-	-- TODO: 使用`FindItem()`，依赖超级宏插件
-
 	-- 查找物品
 	local bag, slot = FindItem(item)
 	if not bag then
@@ -215,9 +254,10 @@ function DaruidBird:CanDebuff(debuff, unit)
 
 	-- 依赖 SuperWoW 支持
 	local _, guid = UnitExists(unit)
+
 	-- 依赖 Cursive 插件
-	if Cursive then
-		return Cursive.curses:HasCurse(debuff, guid) == 1
+	if Cursive and Cursive.curses then
+		return Cursive.curses:HasCurse(debuff, guid) ~= true
 	else
 		-- 无法判断，不可施法
 		return false
