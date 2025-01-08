@@ -1,3 +1,7 @@
+-- `FindItemInfo`来源`!Libs\!MyLib\api\wowAPI.lua`
+-- `GetItemInfoByName`来源`!Libs\!MyLib\api\wowAPI.lua`
+-- `UnitHasAura`来源`!Libs\SE\SpecialEvents-Aura-2.0\SpecialEvents-Aura-2.0.lua`库
+
 -- 非德鲁伊退出运行
 local _, playerClass = UnitClass("player")
 if playerClass ~= "DRUID" then
@@ -31,47 +35,6 @@ local eclipse = {
 		["月蚀"] = 15
 	}
 }
-
----物品链接到名称；来源：超级宏
-local function ItemLinkToName(link)
-	if link then
-   		return gsub(link, "^.*%[(.*)%].*$", "%1")
-	end
-end
-
----寻找物品；来源：超级宏
-local function FindItem(item)
-	if not item then
-		return
-	end
-
-	item = string.lower(ItemLinkToName(item))
-	local link
-	for i = 1, 23 do
-		link = GetInventoryItemLink("player", i)
-		if link then
-			if item == string.lower(ItemLinkToName(link)) then
-				return i, nil, GetInventoryItemTexture('player', i), GetInventoryItemCount('player', i)
-			end
-		end
-	end
-
-	local count, bag, slot, texture
-	local totalcount = 0
-	for i = 0, NUM_BAG_FRAMES do
-		for j = 1, MAX_CONTAINER_ITEMS do
-			link = GetContainerItemLink(i, j)
-			if link then
-				if item == string.lower(ItemLinkToName(link)) then
-					bag, slot = i, j
-					texture, count = GetContainerItemInfo(i, j)
-					totalcount = totalcount + count
-				end
-			end
-		end
-	end
-	return bag, slot, texture, totalcount
-end
 
 ---插件载入
 function DaruidBird:OnInitialize()
@@ -186,7 +149,7 @@ function DaruidBird:DaruidBird_WaitTimeout()
 end
 
 ---使用物品
----@param item string 欲使用物品的名称
+---@param item string 欲使用物品的名称；包中物品仅可以使用消耗品
 ---@param ... string 限定使用物品的增益名称
 ---@return boolean use 是否使用成功
 function DaruidBird:UseItem(item, ...)
@@ -195,24 +158,33 @@ function DaruidBird:UseItem(item, ...)
 	end
 
 	-- 查找物品
-	local bag, slot = FindItem(item)
+	local bag, slot = FindItemInfo(item)
 	if not bag then
 		return false
 	end
 
-	-- 包中物品冷却中
-	if slot and GetContainerItemCooldown(bag, slot) > 0 then
-		return false
+	-- 检验物品
+	if slot then
+		-- 检验包中物品冷却
+		if GetContainerItemCooldown(bag, slot) > 0 then
+			return false
+		end
+
+		-- 检验包中物品不可是装备或武器（如玩家换下的饰品在包中时）
+		local _, _, _, _, type = GetItemInfoByName(item)
+		if type ~= "消耗品" then
+			return false
+		end
+	else
+		-- 检验身上物品冷却
+		if GetInventoryItemCooldown("player", bag) > 0 then
+			return false
+		end
 	end
 
-	-- 身上物品冷却中
-	if not slot and GetInventoryItemCooldown("player", bag) > 0 then
-		return false
-	end
-
-	-- 未检测到增益
+	-- 检测增益
 	if arg.n > 0 then
-		-- 任意增益
+		-- 匹配增益
 		local buff = nil
 		for _, value in ipairs(arg) do
 			if UnitHasAura("player", value) then
@@ -220,6 +192,8 @@ function DaruidBird:UseItem(item, ...)
 				break
 			end
 		end
+
+		-- 无任意匹配
 		if not buff then
 			return false
 		end
@@ -241,8 +215,8 @@ end
 
 ---可否减益
 ---@param debuff string  减益名称
----@param unit? string 目标单位
----@return boolean can 可否施法减益
+---@param unit? string 目标单位；缺省为`target`
+---@return boolean can 可否施法
 function DaruidBird:CanDebuff(debuff, unit)
 	unit = unit or "target"
 
@@ -252,11 +226,10 @@ function DaruidBird:CanDebuff(debuff, unit)
 		return true
 	end
 
-	-- 依赖 SuperWoW 支持
-	local _, guid = UnitExists(unit)
-
-	-- 依赖 Cursive 插件
+	-- 方法`Cursive.curses:HasCurse`来源`Cursive`插件
 	if Cursive and Cursive.curses then
+		-- 返回值`guid`来源`SuperWoW`模组
+		local _, guid = UnitExists(unit)
 		return Cursive.curses:HasCurse(debuff, guid) ~= true
 	else
 		-- 无法判断，不可施法
@@ -278,7 +251,7 @@ end
 
 ---日食；根据自身增益输出法术
 ---@param kill? number 斩杀阶段生命值百分比；缺省为`10`
----@param ... string 欲在日蚀或月蚀使用的物品名称
+---@param ... string 欲在日蚀或月蚀使用的物品名称；包中物品仅可以使用消耗品
 function DaruidBird:Eclipse(kill, ...)
 	kill = kill or 10
 
@@ -351,14 +324,24 @@ function DaruidBird:Entangle()
 end
 
 ---减伤：给目标上持续伤害法术，用于磨死BOSS等场景
-function DaruidBird:Dot()
-	if not UnitHasAura("target", "虫群") then
-		-- 补虫群
-		CastSpellByName("虫群")
-	else
-		-- 补月火，无限发
-		CastSpellByName("月火术")
+---@param spell? string 各减益存在时使用的法术；缺省为`愤怒`
+---@param ... string 减益名称；缺省为`虫群`和`月火术`
+---@return string spell 施放的法术名称
+function DaruidBird:Dot(spell, ...)
+	spell = spell or "愤怒"
+	if arg.n <= 0 then
+		arg = {"虫群", "月火术"}
 	end
+
+	for _, debuff in ipairs(arg) do
+		if not UnitHasAura("target", debuff) then
+			CastSpellByName(debuff)
+			return debuff
+		end
+	end
+
+	CastSpellByName(spell)
+	return spell
 end
 
 ---减益：切换到战斗中的无减益目标，上减益
@@ -394,4 +377,3 @@ function DaruidBird:Debuffs(limit, ...)
 	end
 	UIErrorsFrame:AddMessage("无可减益目标", 1.0, 1.0, 0.0, 53, 5)
 end
-

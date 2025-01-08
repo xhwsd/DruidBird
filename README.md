@@ -6,10 +6,10 @@
 
 ## 使用
 - 安装`!Libs`插件
-- [可选][[文档](https://github.com/pepopo978/Cursive/)][[下载](https://ghgo.xyz/https://github.com/pepopo978/Cursive/archive/master.zip)]安装`Cursive`插件，安装后将区分减益是否是自己施放
-    - [依赖][[文档](https://github.com/balakethelock/SuperWoW/)][[下载](https://ghgo.xyz/https://github.com/balakethelock/SuperWoW/releases/download/Release/SuperWoW.release.1.3.zip)]安装`SuperWoW`模组，将使用`SuperWoWlauncher.exe`启动游戏
-- [可选][[文档](https://github.com/xhwsd/SuperMacro/)][[下载](https://ghgo.xyz/https://github.com/xhwsd/SuperMacro/archive/master.zip)]安装`SuperMacro`插件，安装后将获得更多宏位
-- [[文档](https://github.com/xhwsd/DaruidBird/)][[下载](https://ghgo.xyz/https://github.com/xhwsd/DaruidBird/archive/master.zip)]安装`DaruidBird`插件
+- [可选][[文档](https://github.com/pepopo978/Cursive/)][[下载](https://ghgo.xyz/https://github.com/pepopo978/Cursive/archive/master.zip)] 安装`Cursive`插件，安装后将区分减益是否是自己施放
+    - [依赖][[文档](https://github.com/balakethelock/SuperWoW/)][[下载](https://ghgo.xyz/https://github.com/balakethelock/SuperWoW/releases/download/Release/SuperWoW.release.1.3.zip)] 安装`SuperWoW`模组，将使用`SuperWoWlauncher.exe`启动游戏
+- [可选][[文档](https://github.com/xhwsd/SuperMacro/)][[下载](https://ghgo.xyz/https://github.com/xhwsd/SuperMacro/archive/master.zip)] 安装`SuperMacro`插件，安装后将获得更多宏位
+- [[文档](https://github.com/xhwsd/DaruidBird/)][[下载](https://ghgo.xyz/https://github.com/xhwsd/DaruidBird/archive/master.zip)] 安装`DaruidBird`插件
 - 基于插件提供的函数，创建普通或超级宏
 - 将宏图标拖至动作条，然后使用宏
 
@@ -30,7 +30,7 @@
 
 参数列表：
 - `@param kill? number` 斩杀阶段生命值百分比；缺省为`10`
-- `@param ... string` 欲在日蚀或月蚀使用的物品名称
+- `@param ... string` 欲在日蚀或月蚀使用的物品名称；包中物品仅可以使用消耗品
 
 逻辑描述：
 - 斩杀目标
@@ -63,19 +63,10 @@
 /script DaruidBird:Dot()
 ```
 
-### 减益
-
-> 切换到战斗中的无减益目标，上减益
-
-```
-/script -- CastSpellByName("虫群")
-/script DaruidBird:Debuffs()
-```
-
 参数列表：
-- `@param limit? integer` 最多尝试切换目标次数；缺省为`30`
-- `@param ... string` 减益名称；缺省为`虫群`和`月火术`
-- `@return string debuff` 施放的减益名称
+-  `@param spell? string` 各减益存在时使用的法术；缺省为`愤怒`
+-  `@param ... string` 减益名称；缺省为`虫群`和`月火术`
+-  `@return string spell` 施放的法术名称
 
 
 ## 简单宏
