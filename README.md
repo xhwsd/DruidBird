@@ -6,10 +6,10 @@
 
 ## 使用
 - 安装`!Libs`插件
-- [可选][[文档](https://github.com/pepopo978/Cursive/)][[下载](https://ghfast.top/https://github.com/pepopo978/Cursive/archive/master.zip)]安装`Cursive`插件，安装后将区分减益是否是自己施放
-    - [依赖][[文档](https://github.com/balakethelock/SuperWoW/)][[下载](https://ghfast.top/https://github.com/balakethelock/SuperWoW/releases/download/Release/SuperWoW.release.1.3.zip)]安装`SuperWoW`模组，将使用`SuperWoWlauncher.exe`启动游戏
-- [可选][[文档](https://github.com/xhwsd/SuperMacro/)][[下载](https://ghfast.top/https://github.com/xhwsd/SuperMacro/archive/master.zip)]安装`SuperMacro`插件，安装后将获得更多宏位
-- [[文档](https://github.com/xhwsd/DruidBird/)][[下载](https://ghfast.top/https://github.com/xhwsd/DruidBird/archive/master.zip)]安装`DruidBird`插件
+- [可选][[文档](https://github.com/pepopo978/Cursive/)][[下载](https://github.com/pepopo978/Cursive/archive/master.zip)]安装`Cursive`插件，安装后将区分减益是否是自己施放
+    - [依赖][[文档](https://github.com/balakethelock/SuperWoW/)][[下载](https://github.com/balakethelock/SuperWoW/releases/download/Release/SuperWoW.release.1.3.zip)]安装`SuperWoW`模组，将使用`SuperWoWlauncher.exe`启动游戏
+- [可选][[文档](https://github.com/xhwsd/SuperMacro/)][[下载](https://github.com/xhwsd/SuperMacro/archive/master.zip)]安装`SuperMacro`插件，安装后将获得更多宏位
+- [[文档](https://github.com/xhwsd/DruidBird/)][[下载](https://github.com/xhwsd/DruidBird/archive/main.zip)]安装`DruidBird`插件
 - 基于插件提供的函数，创建普通或超级宏
 - 将宏图标拖至动作条，然后使用宏
 
