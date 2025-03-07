@@ -9,7 +9,7 @@ if playerClass ~= "DRUID" then
 end
 
 -- 定义插件
-DaruidBird = AceLibrary("AceAddon-2.0"):new(
+DruidBird = AceLibrary("AceAddon-2.0"):new(
 	-- 调试
 	"AceDebug-2.0",
 	-- 事件
@@ -37,7 +37,7 @@ local eclipse = {
 }
 
 ---插件载入
-function DaruidBird:OnInitialize()
+function DruidBird:OnInitialize()
 	-- 精简标题
 	self.title = "鸟德辅助"
 	-- 开启调试
@@ -47,11 +47,11 @@ function DaruidBird:OnInitialize()
 end
 
 ---插件打开
-function DaruidBird:OnEnable()
+function DruidBird:OnEnable()
 	self:LevelDebug(3, "插件打开")
 
 	-- 注册命令
-	self:RegisterChatCommand({'/NDFZ', "/DaruidBird"}, {
+	self:RegisterChatCommand({'/NDFZ', "/DruidBird"}, {
 		type = "group",
 		args = {
 			tsms = {
@@ -79,14 +79,14 @@ function DaruidBird:OnEnable()
 end
 
 ---插件关闭
-function DaruidBird:OnDisable()
+function DruidBird:OnDisable()
 	self:LevelDebug(3, "插件关闭")
 end
 
 -- 获得增益效果
 ---@param unit string 事件单位
 ---@param buff string 增益名称
-function DaruidBird:SpecialEvents_UnitBuffGained(unit, buff)
+function DruidBird:SpecialEvents_UnitBuffGained(unit, buff)
 	-- 仅限自身
 	if not UnitIsUnit(unit, "player") then
 		return
@@ -103,8 +103,8 @@ function DaruidBird:SpecialEvents_UnitBuffGained(unit, buff)
 	eclipse.waiting = 0
 
 	-- 取消延迟事件
-	if self:IsEventScheduled("DaruidBird_WaitTimeout") then
-		self:CancelScheduledEvent("DaruidBird_WaitTimeout")
+	if self:IsEventScheduled("DruidBird_WaitTimeout") then
+		self:CancelScheduledEvent("DruidBird_WaitTimeout")
 	end
 
 	self:LevelDebug(3, "获得增益；效果：%s", buff)
@@ -113,7 +113,7 @@ end
 ---失去增益效果
 ---@param unit string 事件单位
 ---@param buff string 增益名称
-function DaruidBird:SpecialEvents_UnitBuffLost(unit, buff)
+function DruidBird:SpecialEvents_UnitBuffLost(unit, buff)
 	-- 仅限自身
 	if not UnitIsUnit(unit, "player") then
 		return
@@ -128,18 +128,18 @@ function DaruidBird:SpecialEvents_UnitBuffLost(unit, buff)
 	eclipse.waiting = GetTime() +  eclipse.waits[buff]
 
 	-- 取消已有延迟事件
-	if self:IsEventScheduled("DaruidBird_WaitTimeout") then
-		self:CancelScheduledEvent("DaruidBird_WaitTimeout")
+	if self:IsEventScheduled("DruidBird_WaitTimeout") then
+		self:CancelScheduledEvent("DruidBird_WaitTimeout")
 	end
 
 	-- 延迟触发事件
-	self:ScheduleEvent("DaruidBird_WaitTimeout", self.DaruidBird_WaitTimeout, eclipse.waits[buff], self)
+	self:ScheduleEvent("DruidBird_WaitTimeout", self.DruidBird_WaitTimeout, eclipse.waits[buff], self)
 
 	self:LevelDebug(3, "失去增益；效果：%s；等待：%d", buff, eclipse.waits[buff])
 end
 
 ---等待超时
-function DaruidBird:DaruidBird_WaitTimeout()
+function DruidBird:DruidBird_WaitTimeout()
 	self:LevelDebug(3, "等待超时；状态：%s", eclipse.state)
 
 	-- 无状态
@@ -152,7 +152,7 @@ end
 ---@param item string 欲使用物品的名称；包中物品仅可以使用消耗品
 ---@param ... string 限定使用物品的增益名称
 ---@return boolean use 是否使用成功
-function DaruidBird:UseItem(item, ...)
+function DruidBird:UseItem(item, ...)
 	if not item then
 		return false
 	end
@@ -217,7 +217,7 @@ end
 ---@param debuff string  减益名称
 ---@param unit? string 目标单位；缺省为`target`
 ---@return boolean can 可否施法
-function DaruidBird:CanDebuff(debuff, unit)
+function DruidBird:CanDebuff(debuff, unit)
 	unit = unit or "target"
 
 	-- 无减益
@@ -239,20 +239,20 @@ end
 
 ---取状态
 ---@return string state 为空字符串表示无状态
-function DaruidBird:GetState()
+function DruidBird:GetState()
 	return eclipse.state
 end
 
 ---取等待
 ---@return number waiting 为`0`表示无等待
-function DaruidBird:GetWaiting()
+function DruidBird:GetWaiting()
 	return eclipse.waiting
 end
 
 ---日食；根据自身增益输出法术
 ---@param kill? number 斩杀阶段生命值百分比；缺省为`10`
 ---@param ... string 欲在日蚀或月蚀使用的物品名称；包中物品仅可以使用消耗品
-function DaruidBird:Eclipse(kill, ...)
+function DruidBird:Eclipse(kill, ...)
 	kill = kill or 10
 
 	-- 抉择法术
@@ -315,7 +315,7 @@ function DaruidBird:Eclipse(kill, ...)
 end
 
 ---纠缠；中断施法，使用纠缠根须
-function DaruidBird:Entangle()
+function DruidBird:Entangle()
 	-- 中断非纠缠根须施法
 	if castLib.isCasting and castLib.GetSpell() ~= "纠缠根须" then
 		SpellStopCasting()
@@ -327,7 +327,7 @@ end
 ---@param spell? string 各减益存在时使用的法术；缺省为`愤怒`
 ---@param ... string 减益名称；缺省为`虫群`和`月火术`
 ---@return string spell 施放的法术名称
-function DaruidBird:Dot(spell, ...)
+function DruidBird:Dot(spell, ...)
 	spell = spell or "愤怒"
 	if arg.n <= 0 then
 		arg = {"虫群", "月火术"}
@@ -348,7 +348,7 @@ end
 ---@param limit? integer 最多尝试切换目标次数；缺省为`30`
 ---@param ... string 减益名称；缺省为`虫群`和`月火术`
 ---@return string debuff 施放的减益名称
-function DaruidBird:Debuffs(limit, ...)
+function DruidBird:Debuffs(limit, ...)
 	limit = limit or 30
 	if arg.n <= 0 then
 		arg = {"虫群", "月火术"}
