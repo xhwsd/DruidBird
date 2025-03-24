@@ -1,7 +1,3 @@
--- `FindItemInfo`来源`!Libs\!MyLib\api\wowAPI.lua`
--- `GetItemInfoByName`来源`!Libs\!MyLib\api\wowAPI.lua`
--- `UnitHasAura`来源`!Libs\SE\SpecialEvents-Aura-2.0\SpecialEvents-Aura-2.0.lua`库
-
 -- 非德鲁伊退出运行
 local _, playerClass = UnitClass("player")
 if playerClass ~= "DRUID" then
@@ -10,18 +6,27 @@ end
 
 -- 定义插件
 DruidBird = AceLibrary("AceAddon-2.0"):new(
+	-- 控制台
+	"AceConsole-2.0",
 	-- 调试
 	"AceDebug-2.0",
 	-- 事件
 	"AceEvent-2.0",
-	-- 控制台
-	"AceConsole-2.0"
+	-- 数据库
+	"AceDB-2.0",
+	-- 小地图菜单
+	"FuBarPlugin-2.0"
 )
 
+-- 提示操作
+local Tablet = AceLibrary("Tablet-2.0")
 -- 光环事件
-local auraEvents = AceLibrary("SpecialEvents-Aura-2.0")
+local AuraEvents = AceLibrary("SpecialEvents-Aura-2.0")
 -- 施法库
-local castLib = AceLibrary("CastLib-1.0")
+local CastLib = AceLibrary("CastLib-1.0")
+
+---@type Wsd-Health-1.0
+local Health = AceLibrary("Wsd-Health-1.0")
 
 -- 日食
 local eclipse = {
@@ -29,66 +34,251 @@ local eclipse = {
 	state = "",
 	-- 等待
 	waiting = 0,
-	-- 等待
-	waits = {
-		["日蚀"] = 15,
-		["月蚀"] = 15
-	}
 }
 
----插件载入
+-- 插件载入
 function DruidBird:OnInitialize()
 	-- 精简标题
-	self.title = "鸟德辅助"
+	self.title = "鸟德"
 	-- 开启调试
 	self:SetDebugging(true)
 	-- 调试等级
 	self:SetDebugLevel(2)
-end
 
----插件打开
-function DruidBird:OnEnable()
-	self:LevelDebug(3, "插件打开")
+	-- 注册数据
+	self:RegisterDB("DruidBirdDB")
+	-- 注册默认值
+	self:RegisterDefaults('profile', {
+		-- 时机
+		timing = {
+			-- 斩杀起始剩余
+			kill = 10,
+			-- 饰品1
+			jewelry1 = {
+				-- 有日蚀时
+				solar = true,
+				-- 有月蚀时
+				lunar = false
+			},
+			-- 饰品2
+			jewelry2 = {
+				-- 有日蚀时
+				solar = true,
+				-- 有月蚀时
+				lunar = false
+			}
+		},
+		-- 等待
+		wait = {
+			-- 日蚀等待秒数
+			solar = 15,
+			-- 月蚀等待秒数
+			lunar = 15
+		},
+	})
 
-	-- 注册命令
-	self:RegisterChatCommand({'/NDFZ', "/DruidBird"}, {
+	-- 具体图标
+	self.hasIcon = true
+	-- 小地图图标
+	self:SetIcon("Interface\\Icons\\Spell_Nature_ForceOfNature")
+	-- 默认位置
+	self.defaultPosition = "LEFT"
+	-- 默认小地图位置
+	self.defaultMinimapPosition = 210
+	-- 无法分离提示（标签）
+	self.cannotDetachTooltip = false
+	-- 角色独立配置
+	self.independentProfile = true
+	-- 挂载时是否隐藏
+	self.hideWithoutStandby = false
+	-- 注册菜单项
+	self.OnMenuRequest = {
 		type = "group",
+		handler = self,
 		args = {
-			tsms = {
+			timing = {
+				type = "group",
+				name = "时机",
+				desc = "设置法术等触发时机",
+				order = 1,
+				args = {
+					kill = {
+						type = "range",
+						name = "斩杀",
+						desc = "当剩余小于或等于该百分比时斩杀",
+						order = 1,
+						min = 0,
+						max = 100,
+						step = 1,
+						get = function()
+							return self.db.profile.timing.kill
+						end,
+						set = function(value)
+							self.db.profile.timing.kill = value
+						end
+					},
+					jewelry1 = {
+						type = "group",
+						name = "饰品1",
+						desc = "设置饰品1施放时机",
+						order = 2,
+						args = {
+							solar = {
+								type = "toggle",
+								name = "日蚀",
+								desc = "当有日蚀时",
+								order = 1,
+								get = function()
+									return self.db.profile.timing.jewelry1.solar
+								end,
+								set = function(value)
+									self.db.profile.timing.jewelry1.solar = value
+								end
+							},
+							lunar = {
+								type = "toggle",
+								name = "月蚀",
+								desc = "当有月蚀时",
+								order = 2,
+								get = function()
+									return self.db.profile.timing.jewelry1.lunar
+								end,
+								set = function(value)
+									self.db.profile.timing.jewelry1.lunar = value
+								end
+							},
+						}
+					},
+					jewelry2 = {
+						type = "group",
+						name = "饰品2",
+						desc = "设置饰品2施放时机",
+						order = 2,
+						args = {
+							solar = {
+								type = "toggle",
+								name = "日蚀",
+								desc = "当有日蚀时",
+								order = 1,
+								get = function()
+									return self.db.profile.timing.jewelry2.solar
+								end,
+								set = function(value)
+									self.db.profile.timing.jewelry2.solar = value
+								end
+							},
+							lunar = {
+								type = "toggle",
+								name = "月蚀",
+								desc = "当有月蚀时",
+								order = 2,
+								get = function()
+									return self.db.profile.timing.jewelry2.lunar
+								end,
+								set = function(value)
+									self.db.profile.timing.jewelry2.lunar = value
+								end
+							},
+						}
+					},
+				}
+			},
+			wait = {
+				type = "group",
+				name = "等待",
+				desc = "设置日蚀或月蚀消失后等待秒数",
+				order = 2,
+				args = {
+					solar = {
+						type = "range",
+						name = "日蚀",
+						desc = "日蚀消失后等待秒数",
+						order = 1,
+						min = 0,
+						max = 60,
+						step = 1,
+						get = function()
+							return self.db.profile.wait.solar
+						end,
+						set = function(value)
+							self.db.profile.wait.solar = value
+						end
+					},
+					lunar = {
+						type = "range",
+						name = "月蚀",
+						desc = "月蚀消失后等待秒数",
+						order = 2,
+						min = 0,
+						max = 60,
+						step = 1,
+						get = function()
+							return self.db.profile.wait.lunar
+						end,
+						set = function(value)
+							self.db.profile.wait.lunar = value
+						end
+					},
+				}
+			},
+			-- 其它
+			other = {
+				type = "header",
+				name = "其它",
+				order = 3,
+			},
+			debug = {
+				type = "toggle",
 				name = "调试模式",
 				desc = "开启或关闭调试模式",
-				type = "toggle",
+				order = 4,
 				get = "IsDebugging",
 				set = "SetDebugging"
 			},
-			tsdj = {
+			level = {
+				type = "range",
 				name = "调试等级",
 				desc = "设置或获取调试等级",
-				type = "range",
+				order = 5,
 				min = 1,
 				max = 3,
+				step = 1,
 				get = "GetDebugLevel",
 				set = "SetDebugLevel"
 			}
-		},
-	})
+		}
+	}
+end
+
+-- 插件打开
+function DruidBird:OnEnable()
+	self:LevelDebug(3, "插件打开")
 
 	-- 注册事件
 	self:RegisterEvent("SpecialEvents_UnitBuffGained")
 	self:RegisterEvent("SpecialEvents_UnitBuffLost")
 end
 
----插件关闭
+-- 插件关闭
 function DruidBird:OnDisable()
 	self:LevelDebug(3, "插件关闭")
+end
+
+-- 提示更新
+function DruidBear:OnTooltipUpdate()
+	-- 置小地图图标点燃提示
+	Tablet:SetHint("\n右键 - 显示插件选项")
 end
 
 -- 获得增益效果
 ---@param unit string 事件单位
 ---@param buff string 增益名称
 function DruidBird:SpecialEvents_UnitBuffGained(unit, buff)
+	-- 会重复收到该事件（如：团队中 raidN、安装 SuperWoW 为 GUID、player）
+	self:LevelDebug(3, "获得增益；效果：%s；单位：%s", buff, unit)
+
 	-- 仅限自身
-	if not UnitIsUnit(unit, "player") then
+	if unit ~= "player" then
 		return
 	end
 
@@ -106,39 +296,44 @@ function DruidBird:SpecialEvents_UnitBuffGained(unit, buff)
 	if self:IsEventScheduled("DruidBird_WaitTimeout") then
 		self:CancelScheduledEvent("DruidBird_WaitTimeout")
 	end
-
-	self:LevelDebug(3, "获得增益；效果：%s", buff)
 end
 
----失去增益效果
+-- 失去增益效果
 ---@param unit string 事件单位
 ---@param buff string 增益名称
 function DruidBird:SpecialEvents_UnitBuffLost(unit, buff)
-	-- 仅限自身
-	if not UnitIsUnit(unit, "player") then
-		return
-	end
+	-- 会重复收到该事件（如：团队中 raidN、安装 SuperWoW 为 GUID、player）
+	self:LevelDebug(3, "失去增益；效果：%s；单位：%s", buff, unit)
 
-	-- 仅限日蚀和月蚀效果
-	if buff ~= "日蚀" and buff ~= "月蚀" then
+	-- 仅限自身
+	if unit ~= "player" then
 		return
 	end
 
 	-- 等待时间
-	eclipse.waiting = GetTime() +  eclipse.waits[buff]
+	local wait = nil
+	if buff == "日蚀" then
+		wait = self.db.profile.wait.solar
+	elseif buff == "月蚀" then
+		wait = self.db.profile.wait.lunar
+	else
+		-- 仅限日蚀和月蚀效果
+		return
+	end
 
 	-- 取消已有延迟事件
 	if self:IsEventScheduled("DruidBird_WaitTimeout") then
 		self:CancelScheduledEvent("DruidBird_WaitTimeout")
 	end
 
-	-- 延迟触发事件
-	self:ScheduleEvent("DruidBird_WaitTimeout", self.DruidBird_WaitTimeout, eclipse.waits[buff], self)
+	-- 等待超时时间
+	eclipse.waiting = GetTime() + wait
 
-	self:LevelDebug(3, "失去增益；效果：%s；等待：%d", buff, eclipse.waits[buff])
+	-- 延迟触发事件
+	self:ScheduleEvent("DruidBird_WaitTimeout", self.DruidBird_WaitTimeout, wait, self)
 end
 
----等待超时
+-- 等待超时
 function DruidBird:DruidBird_WaitTimeout()
 	self:LevelDebug(3, "等待超时；状态：%s", eclipse.state)
 
@@ -148,80 +343,15 @@ function DruidBird:DruidBird_WaitTimeout()
 	eclipse.waiting = 0
 end
 
----使用物品
----@param item string 欲使用物品的名称；包中物品仅可以使用消耗品
----@param ... string 限定使用物品的增益名称
----@return boolean use 是否使用成功
-function DruidBird:UseItem(item, ...)
-	if not item then
-		return false
-	end
-
-	-- 查找物品
-	local bag, slot = FindItemInfo(item)
-	if not bag then
-		return false
-	end
-
-	-- 检验物品
-	if slot then
-		-- 检验包中物品冷却
-		if GetContainerItemCooldown(bag, slot) > 0 then
-			return false
-		end
-
-		-- 检验包中物品不可是装备或武器（如玩家换下的饰品在包中时）
-		local _, _, _, _, type = GetItemInfoByName(item)
-		if type ~= "消耗品" then
-			return false
-		end
-	else
-		-- 检验身上物品冷却
-		if GetInventoryItemCooldown("player", bag) > 0 then
-			return false
-		end
-	end
-
-	-- 检测增益
-	if arg.n > 0 then
-		-- 匹配增益
-		local buff = nil
-		for _, value in ipairs(arg) do
-			if UnitHasAura("player", value) then
-				buff = value
-				break
-			end
-		end
-
-		-- 无任意匹配
-		if not buff then
-			return false
-		end
-	end
-
-	-- 打断施法
-	SpellStopCasting()
-
-	-- 使用物品
-	if slot then
-		-- 使用包中的物品
-		UseContainerItem(bag, slot)
-	else
-		-- 使用身上的物品
-		UseInventoryItem(bag)
-	end
-	return true
-end
-
----可否减益
----@param debuff string  减益名称
+-- 可否减益
+---@param name string 减益名称
 ---@param unit? string 目标单位；缺省为`target`
 ---@return boolean can 可否施法
-function DruidBird:CanDebuff(debuff, unit)
+function DruidBird:CanDebuff(name, unit)
 	unit = unit or "target"
 
 	-- 无减益
-	if not UnitHasAura(unit, debuff) then
+	if not UnitHasAura(unit, name) then
 		-- 可以施法
 		return true
 	end
@@ -230,58 +360,50 @@ function DruidBird:CanDebuff(debuff, unit)
 	if Cursive and Cursive.curses then
 		-- 返回值`guid`来源`SuperWoW`模组
 		local _, guid = UnitExists(unit)
-		return Cursive.curses:HasCurse(debuff, guid) ~= true
+		return Cursive.curses:HasCurse(name, guid) ~= true
 	else
 		-- 无法判断，不可施法
 		return false
 	end
 end
 
----取状态
----@return string state 为空字符串表示无状态
-function DruidBird:GetState()
-	return eclipse.state
+-- 可否饰品
+---@param slot number 装备栏位；`13`为饰品1，`14`为饰品2
+---@return boolean used 可否使用
+function DruidBird:CanJewelr(slot)
+	-- 有日蚀时，使用饰品1
+	local start, _, enable = GetInventoryItemCooldown("player", slot)
+	return start == 0 and enable == 1
 end
 
----取等待
----@return number waiting 为`0`表示无等待
-function DruidBird:GetWaiting()
-	return eclipse.waiting
-end
-
----日食；根据自身增益输出法术
----@param kill? number 斩杀阶段生命值百分比；缺省为`10`
----@param ... string 欲在日蚀或月蚀使用的物品名称；包中物品仅可以使用消耗品
-function DruidBird:Eclipse(kill, ...)
-	kill = kill or 10
-
+-- 日食；根据自身增益输出法术
+function DruidBird:Eclipse()
 	-- 抉择法术
-	local health = math.floor(UnitHealth("target") / UnitHealthMax("target") * 100)
-	if health <= kill then
+	local health = Health:GetRemaining("target")
+	if health <= self.db.profile.timing.kill then
 		-- 尽快斩杀
 		CastSpellByName("愤怒")
 	else
-		-- 使用物品
-		for _, item in ipairs(arg) do
-			if self:UseItem(item, "日蚀", "月蚀") then
-				return
-			end
-		end
-
 		-- 抉择施法
-		if self:GetState() == "日蚀" then
+		if eclipse.state == "日蚀" then
 			-- 自然伤害提高
 			if self:CanDebuff("虫群") then
 				-- 持续自然伤害
 				CastSpellByName("虫群")
-			elseif self:GetWaiting() > 0 and self:CanDebuff("月火术") then
+			elseif self.db.profile.timing.jewelry1.solar and eclipse.waiting == 0 and self:CanJewelr(13) then
+				-- 有日蚀时，使用饰品1
+				UseInventoryItem(13)
+			elseif self.db.profile.timing.jewelry2.solar and eclipse.waiting == 0 and self:CanJewelr(14) then
+				-- 有日蚀时，使用饰品2
+				UseInventoryItem(14)
+			elseif eclipse.waiting > 0 and CanDebuff("月火术") then
 				-- 无日蚀等待月蚀时，愤怒法力消耗降低
 				CastSpellByName("月火术")
 			else
 				-- 造成自然伤害，暴击获得月蚀
 				CastSpellByName("愤怒")
 			end
-		elseif self:GetState() == "月蚀" then
+		elseif eclipse.state == "月蚀" then
 			-- 奥术伤害提高
 			if self:CanDebuff("月火术") then
 				-- 持续奥术伤害
@@ -289,6 +411,12 @@ function DruidBird:Eclipse(kill, ...)
 			elseif self:CanDebuff("虫群") then
 				-- 星火施法时间缩短
 				CastSpellByName("虫群")
+			elseif self.db.profile.timing.jewelry2.lunar and eclipse.waiting == 0 and self:CanJewelr(13) then
+				-- 有月蚀时，使用饰品2
+				UseInventoryItem(13)
+			elseif self.db.profile.timing.jewelry2.lunar and eclipse.waiting == 0 and self:CanJewelr(14) then
+				-- 有月蚀时，使用饰品2
+				UseInventoryItem(14)
 			else
 				-- 造成奥术伤害，暴击获得日蚀
 				CastSpellByName("星火术")
@@ -314,16 +442,16 @@ function DruidBird:Eclipse(kill, ...)
 	-- 自然恩赐：下一次愤怒法力值消耗降低50%，可累积3次
 end
 
----纠缠；中断施法，使用纠缠根须
+-- 纠缠；中断施法，使用纠缠根须
 function DruidBird:Entangle()
 	-- 中断非纠缠根须施法
-	if castLib.isCasting and castLib.GetSpell() ~= "纠缠根须" then
+	if CastLib.isCasting and CastLib.GetSpell() ~= "纠缠根须" then
 		SpellStopCasting()
 	end
 	CastSpellByName("纠缠根须")
 end
 
----减伤：给目标上持续伤害法术，用于磨死BOSS等场景
+-- 减伤：给目标上持续伤害法术，用于磨死BOSS等场景
 ---@param spell? string 各减益存在时使用的法术；缺省为`愤怒`
 ---@param ... string 减益名称；缺省为`虫群`和`月火术`
 ---@return string spell 施放的法术名称
@@ -344,7 +472,7 @@ function DruidBird:Dot(spell, ...)
 	return spell
 end
 
----减益：切换到战斗中的无减益目标，上减益
+-- 减益：切换到战斗中的无减益目标，上减益
 ---@param limit? integer 最多尝试切换目标次数；缺省为`30`
 ---@param ... string 减益名称；缺省为`虫群`和`月火术`
 ---@return string debuff 施放的减益名称
@@ -359,7 +487,7 @@ function DruidBird:Debuffs(limit, ...)
 		if UnitCanAttack("player", "target") and UnitAffectingCombat("target") then
 			for _, value in ipairs(arg) do
 				-- 可否施放减益
-				if self:CanDebuff(value) then
+				if CanDebuff(value) then
 					-- 施放减益
 					CastSpellByName(value)
 					return value
