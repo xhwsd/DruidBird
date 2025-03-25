@@ -396,7 +396,7 @@ function DruidBird:Eclipse()
 			elseif self.db.profile.timing.jewelry2.solar and eclipse.waiting == 0 and self:CanJewelr(14) then
 				-- 有日蚀时，使用饰品2
 				UseInventoryItem(14)
-			elseif eclipse.waiting > 0 and CanDebuff("月火术") then
+			elseif eclipse.waiting > 0 and self:CanDebuff("月火术") then
 				-- 无日蚀等待月蚀时，愤怒法力消耗降低
 				CastSpellByName("月火术")
 			else
