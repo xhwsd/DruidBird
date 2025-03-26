@@ -6,6 +6,7 @@
 ## Version: 2.1.1
 ## Dependencies: !Libs
 
+Libs\Wsd-Effect-1.0\Wsd-Effect-1.0.lua
 Libs\Wsd-Health-1.0\Wsd-Health-1.0.lua
 
 DruidBird.lua
