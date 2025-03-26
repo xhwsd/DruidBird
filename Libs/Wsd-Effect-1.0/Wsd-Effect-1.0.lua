@@ -10,7 +10,7 @@ Dependencies: AceLibrary
 -- 主要版本
 local MAJOR_VERSION = "Wsd-Effect-1.0"
 -- 次要版本
-local MINOR_VERSION = "$Revision: 10003 $"
+local MINOR_VERSION = "$Revision: 10004 $"
 
 -- 检验AceLibrary
 if not AceLibrary then
@@ -45,6 +45,8 @@ end
 --------------------------------
 
 -- 效果提示
+-- GameTooltip方法 https://warcraft.wiki.gg/wiki/Special:PrefixIndex/API_GameTooltip
+-- GameTooltip模板 https://warcraft.wiki.gg/wiki/XML/GameTooltip
 local EffectTooltip = CreateFrame("GameTooltip", "EffectTooltip", nil, "GameTooltipTemplate")
 
 -- 查找单位效果名称
@@ -110,9 +112,36 @@ function Library:FindName(name, unit)
 	end
 end
 
--- buffIndex 从1开始
--- buffId 从0开始
--- https://wowpedia.fandom.com/wiki/BuffId
+-- 取自身效果信息
+---@param name string 效果名称
+---@return integer index 效果索引；从1开始
+---@return string text 效果文本
+---@return integer timeleft 效果剩余时间
+---@return string texture 效果图标
+function Library:MyBuff(name)
+	EffectTooltip:SetOwner(UIParent, "ANCHOR_NONE")
+	for buffId = 0, 64 do
+		-- https://warcraft.wiki.gg/wiki/API_GetPlayerBuff?oldid=3951140
+		local index = GetPlayerBuff(buffId)
+		if index > -1 then
+			EffectTooltip:ClearLines()
+			-- https://warcraft.wiki.gg/wiki/API_GameTooltip_SetPlayerBuff?oldid=323371
+			EffectTooltip:SetPlayerBuff(index)
+			local text = EffectTooltipTextLeft1:GetText() or ""
+			if string.find(text, name) then
+				-- https://warcraft.wiki.gg/wiki/API_GetPlayerBuffTimeLeft?oldid=2250730
+				local timeleft = GetPlayerBuffTimeLeft(index)
+				-- https://warcraft.wiki.gg/wiki/API_GetPlayerBuffTexture?oldid=4896681
+				local texture = GetPlayerBuffTexture(index)
+				return index, text, timeleft, texture
+			end
+		end
+	end
+
+	-- buffId 从0开始
+	-- buffIndex 从1开始
+	-- https://warcraft.wiki.gg/wiki/BuffId?oldid=1793622
+end
 
 --------------------------------
 

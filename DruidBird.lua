@@ -464,7 +464,7 @@ function DruidBird:OnDisable()
 end
 
 -- 提示更新
-function DruidBear:OnTooltipUpdate()
+function DruidBird:OnTooltipUpdate()
 	-- 置小地图图标点燃提示
 	Tablet:SetHint("\n右键 - 显示插件选项")
 end
