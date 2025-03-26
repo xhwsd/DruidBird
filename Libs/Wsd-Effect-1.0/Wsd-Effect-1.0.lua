@@ -10,7 +10,7 @@ Dependencies: AceLibrary
 -- 主要版本
 local MAJOR_VERSION = "Wsd-Effect-1.0"
 -- 次要版本
-local MINOR_VERSION = "$Revision: 10002 $"
+local MINOR_VERSION = "$Revision: 10003 $"
 
 -- 检验AceLibrary
 if not AceLibrary then
@@ -53,7 +53,6 @@ local EffectTooltip = CreateFrame("GameTooltip", "EffectTooltip", nil, "GameTool
 ---@return string kind 效果类型；可选值：`mainhand`、`offhand`、`buff`、`debuff`
 ---@return integer index 效果索引；从1开始
 ---@return string text 效果文本
----@return integer time 结束时间，仅玩家增益时有效
 function Library:FindName(name, unit)
 	unit = unit or "player"
 
@@ -86,21 +85,13 @@ function Library:FindName(name, unit)
 		end
 	else
 		-- 增益
-		-- buffIndex 从1开始
 		local index = 1
 		while UnitBuff(unit, index) do
 			EffectTooltip:ClearLines()
 			EffectTooltip:SetUnitBuff(unit, index)
 			local text = EffectTooltipTextLeft1:GetText() or ""
 			if string.find(text, name) then
-				if UnitIsPlayer(unit) then
-					-- buffId 从0开始
-					-- https://wowpedia.fandom.com/wiki/BuffId
-					local time = GetPlayerBuffTimeLeft(index - 1)
-					return "buff", index, text, time
-				else
-					return "buff", index, text
-				end
+				return "buff", index, text
 			end
 			index = index + 1
 		end
@@ -118,6 +109,10 @@ function Library:FindName(name, unit)
 		end
 	end
 end
+
+-- buffIndex 从1开始
+-- buffId 从0开始
+-- https://wowpedia.fandom.com/wiki/BuffId
 
 --------------------------------
 

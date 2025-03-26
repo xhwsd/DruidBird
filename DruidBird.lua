@@ -87,7 +87,7 @@ function DruidBird:OnInitialize()
 		-- 时机
 		timing = {
 			-- 虫群
-			-- 本身自然伤害，又能提供星火-0.5s的法时间，无论日蚀、月蚀都有收益，可以全程保持不断
+			-- 本身自然伤害，又能提供星火-0.75s的法时间，无论日蚀、月蚀都有收益，可以全程保持不断
 			insectSwarm = {
 				-- 有日蚀时
 				solar = true,
