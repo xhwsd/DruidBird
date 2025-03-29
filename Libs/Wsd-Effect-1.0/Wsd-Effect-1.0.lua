@@ -118,12 +118,12 @@ end
 ---@return string text 效果文本
 ---@return integer timeleft 效果剩余时间
 ---@return string texture 效果图标
-function Library:MyBuff(name)
+function Library:GetInfo(name)
 	EffectTooltip:SetOwner(UIParent, "ANCHOR_NONE")
-	for buffId = 0, 64 do
+	for id = 0, 64 do
 		-- https://warcraft.wiki.gg/wiki/API_GetPlayerBuff?oldid=3951140
-		local index = GetPlayerBuff(buffId)
-		if index > -1 then
+		local index = GetPlayerBuff(id)
+		if index >= 0 then
 			EffectTooltip:ClearLines()
 			-- https://warcraft.wiki.gg/wiki/API_GameTooltip_SetPlayerBuff?oldid=323371
 			EffectTooltip:SetPlayerBuff(index)

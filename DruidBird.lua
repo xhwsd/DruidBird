@@ -225,10 +225,10 @@ function DruidBird:OnInitialize()
 								desc = "无日蚀或月蚀且未等待时",
 								order = 5,
 								get = function()
-									return self.db.profile.timing.insectSwarm.solarWait
+									return self.db.profile.timing.insectSwarm.normal
 								end,
 								set = function(value)
-									self.db.profile.timing.insectSwarm.solarWait = value
+									self.db.profile.timing.insectSwarm.normal = value
 								end
 							},
 						}
@@ -612,6 +612,15 @@ function DruidBird:Eclipse()
 			CastSpellByName("愤怒")
 		end
 	end
+
+	-- 愤怒：造成自然伤害；造成致命一击后有概率获得月蚀
+	-- 星火术：施法时间3.5秒；造成奥术伤害；造成致命一击后有概率获得日蚀
+	-- 月火术：立即伤害、持续18秒奥术伤害；造成伤害后有30%几率获得自然恩赐
+	-- 虫群：降低命中2%、持续18秒自然伤害；造成伤害后有30%几率获得万物平衡
+	-- 日蚀：增加25%自然伤害，持续15秒，冷却30秒
+	-- 月蚀：增加25%奥术伤害，持续15秒，冷却30秒
+	-- 万物平衡：下一次星火术施法时间减少0.75秒，可累积3次
+	-- 自然恩赐：下一次愤怒法力值消耗降低50%，可累积3次
 end
 
 -- 纠缠；中断施法，使用纠缠根须
@@ -677,13 +686,3 @@ function DruidBird:Debuffs(limit, ...)
 	end
 	UIErrorsFrame:AddMessage("无可减益目标", 1.0, 1.0, 0.0, 53, 5)
 end
-
-
--- 愤怒：造成自然伤害；造成致命一击后有概率获得月蚀
--- 星火术：施法时间3.5秒；造成奥术伤害；造成致命一击后有概率获得日蚀
--- 月火术：立即伤害、持续18秒奥术伤害；造成伤害后有30%几率获得自然恩赐
--- 虫群：降低命中2%、持续18秒自然伤害；造成伤害后有30%几率获得万物平衡
--- 日蚀：增加25%自然伤害，持续15秒，冷却30秒
--- 月蚀：增加25%奥术伤害，持续15秒，冷却30秒
--- 万物平衡：下一次星火术施法时间减少0.75秒，可累积3次
--- 自然恩赐：下一次愤怒法力值消耗降低50%，可累积3次
