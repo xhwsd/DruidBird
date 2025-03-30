@@ -608,6 +608,9 @@ function DruidBird:Eclipse()
 		elseif self.db.profile.timing.moonfire.normal and CanDebuff("月火术") then
 			-- 补月火
 			CastSpellByName("月火术")
+		elseif Effect:FindName("万物平衡") then
+			-- 有万物平衡，打星火术（愤怒有弹道时间）
+			CastSpellByName("星火术")
 		else
 			CastSpellByName("愤怒")
 		end
