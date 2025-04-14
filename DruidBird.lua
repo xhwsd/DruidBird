@@ -21,12 +21,12 @@ DruidBird = AceLibrary("AceAddon-2.0"):new(
 -- 提示操作
 local Tablet = AceLibrary("Tablet-2.0")
 -- 光环事件
-local AuraEvents = AceLibrary("SpecialEvents-Aura-2.0")
+local AuraEvent = AceLibrary("SpecialEvents-Aura-2.0")
 -- 施法库
 local CastLib = AceLibrary("CastLib-1.0")
 
----@type Wsd-Effect-1.0
-local Effect = AceLibrary("Wsd-Effect-1.0")
+---@type Wsd-Buff-1.0
+local Buff = AceLibrary("Wsd-Buff-1.0")
 ---@type Wsd-Health-1.0
 local Health = AceLibrary("Wsd-Health-1.0")
 
@@ -39,14 +39,14 @@ local eclipse = {
 }
 
 -- 可否减益
----@param name string 减益名称
+---@param debuff string 减益名称
 ---@param unit? string 目标单位；缺省为`target`
 ---@return boolean can 可否施法
-local function CanDebuff(name, unit)
+local function CanDebuff(debuff, unit)
 	unit = unit or "target"
 
 	-- 无减益
-	if not Effect:FindName(name, unit) then
+	if not Buff:GetUnit(debuff, unit) then
 		-- 可以施法
 		return true
 	end
@@ -55,7 +55,7 @@ local function CanDebuff(name, unit)
 	if Cursive and Cursive.curses then
 		-- 返回值`guid`来源`SuperWoW`模组
 		local _, guid = UnitExists(unit)
-		return Cursive.curses:HasCurse(name, guid) ~= true
+		return Cursive.curses:HasCurse(debuff, guid) ~= true
 	else
 		-- 无法判断，不可施法
 		return false
@@ -113,6 +113,11 @@ function DruidBird:OnInitialize()
 				lunarWait = true,
 				-- 常规时
 				normal = true,
+			},
+			-- 星火术
+			starfire = {
+				-- 有万物平衡（常规和斩杀阶段）
+				balance = false,
 			},
 			-- 饰品1
 			jewelry1 = {
@@ -301,11 +306,31 @@ function DruidBird:OnInitialize()
 							},
 						}
 					},
+					starfire  = {
+						type = "group",
+						name = "星火术",
+						desc = "设置星火术施放时机",
+						order = 3,
+						args = {
+							balance = {
+								type = "toggle",
+								name = "万物平衡",
+								desc = "在常规和斩杀阶段有万物平衡时",
+								order = 1,
+								get = function()
+									return self.db.profile.timing.starfire.balance
+								end,
+								set = function(value)
+									self.db.profile.timing.starfire.balance = value
+								end
+							},
+						}
+					},
 					jewelry1 = {
 						type = "group",
 						name = "饰品1",
 						desc = "设置饰品1施放时机",
-						order = 3,
+						order = 4,
 						args = {
 							solar = {
 								type = "toggle",
@@ -337,7 +362,7 @@ function DruidBird:OnInitialize()
 						type = "group",
 						name = "饰品2",
 						desc = "设置饰品2施放时机",
-						order = 4,
+						order = 5,
 						args = {
 							solar = {
 								type = "toggle",
@@ -369,7 +394,7 @@ function DruidBird:OnInitialize()
 						type = "range",
 						name = "斩杀",
 						desc = "目标生命小于或等于该百分比时",
-						order = 5,
+						order = 6,
 						min = 0,
 						max = 100,
 						step = 1,
@@ -454,8 +479,8 @@ function DruidBird:OnEnable()
 	self:LevelDebug(3, "插件启用")
 
 	-- 注册事件
-	self:RegisterEvent("SpecialEvents_UnitBuffGained")
-	self:RegisterEvent("SpecialEvents_UnitBuffLost")
+	self:RegisterEvent("SpecialEvents_PlayerBuffGained")
+	self:RegisterEvent("SpecialEvents_PlayerBuffLost")
 end
 
 -- 插件禁用
@@ -469,17 +494,11 @@ function DruidBird:OnTooltipUpdate()
 	Tablet:SetHint("\n右键 - 显示插件选项")
 end
 
--- 获得增益效果
----@param unit string 事件单位
+-- 自身获得增益效果
 ---@param buff string 增益名称
-function DruidBird:SpecialEvents_UnitBuffGained(unit, buff)
-	self:LevelDebug(3, "获得增益；效果：%s；单位：%s", buff, unit)
-
-	-- 仅限自身
-	-- 会重复收到该事件（如：团队中 raidN、安装 SuperWoW 为 GUID、player）
-	if unit ~= "player" then
-		return
-	end
+---@param index number 增益索引
+function DruidBird:SpecialEvents_PlayerBuffGained(buff, index)
+	self:LevelDebug(3, "获得增益；增益：%s", buff)
 
 	-- 仅限日蚀和月蚀效果
 	if buff ~= "日蚀" and buff ~= "月蚀" then
@@ -496,17 +515,11 @@ function DruidBird:SpecialEvents_UnitBuffGained(unit, buff)
 	end
 end
 
--- 失去增益效果
----@param unit string 事件单位
+-- 自身失去增益效果
 ---@param buff string 增益名称
-function DruidBird:SpecialEvents_UnitBuffLost(unit, buff)
-	self:LevelDebug(3, "失去增益；效果：%s；单位：%s", buff, unit)
-
-	-- 仅限自身
-	-- 会重复收到该事件（如：团队中 raidN、安装 SuperWoW 为 GUID、player）
-	if unit ~= "player" then
-		return
-	end
+---@param index number 增益索引
+function DruidBird:SpecialEvents_PlayerBuffLost(buff, index)
+	self:LevelDebug(3, "失去增益；增益：%s", buff)
 
 	-- 取等待秒数
 	local wait = nil
@@ -546,7 +559,7 @@ function DruidBird:Eclipse()
 	local health = Health:GetRemaining("target")
 	if health <= self.db.profile.timing.kill then
 		-- 尽快斩杀
-		if Effect:FindName("万物平衡") then
+		if self.db.profile.timing.starfire.balance and Buff:GetUnit("万物平衡") then
 			-- 有万物平衡，打星火术（愤怒有弹道时间）
 			CastSpellByName("星火术")
 		else
@@ -608,8 +621,9 @@ function DruidBird:Eclipse()
 		elseif self.db.profile.timing.moonfire.normal and CanDebuff("月火术") then
 			-- 补月火
 			CastSpellByName("月火术")
-		elseif Effect:FindName("万物平衡") then
+		elseif self.db.profile.timing.starfire.balance and Buff:GetUnit("万物平衡") then
 			-- 有万物平衡，打星火术（愤怒有弹道时间）
+			-- 这将导致进入月蚀阶段不长，可能还会进入日蚀阶段
 			CastSpellByName("星火术")
 		else
 			CastSpellByName("愤怒")
@@ -636,17 +650,17 @@ function DruidBird:Entangle()
 end
 
 -- 减伤：给目标上持续伤害法术，用于磨死BOSS等场景
----@param spell? string 各减益存在时使用的法术；缺省为`愤怒`
+---@param spell? string 各减益存在时使用的法术；缺省为`月火术`
 ---@param ... string 减益名称；缺省为`虫群`和`月火术`
 ---@return string spell 施放的法术名称
 function DruidBird:Dot(spell, ...)
-	spell = spell or "愤怒"
+	spell = spell or "月火术"
 	if arg.n <= 0 then
 		arg = {"虫群", "月火术"}
 	end
 
 	for _, debuff in ipairs(arg) do
-		if not Effect:FindName(debuff, "target") then
+		if not Buff:GetUnit(debuff, "target") then
 			CastSpellByName(debuff)
 			return debuff
 		end
@@ -654,38 +668,4 @@ function DruidBird:Dot(spell, ...)
 
 	CastSpellByName(spell)
 	return spell
-end
-
--- 减益：切换到战斗中的无减益目标，上减益
----@param limit? integer 最多尝试切换目标次数；缺省为`30`
----@param ... string 减益名称；缺省为`虫群`和`月火术`
----@return string debuff 施放的减益名称
-function DruidBird:Debuffs(limit, ...)
-	limit = limit or 30
-	if arg.n <= 0 then
-		arg = {"虫群", "月火术"}
-	end
-
-	for index = 1, limit do
-		-- 可攻击和战斗中的目标
-		if UnitCanAttack("player", "target") and UnitAffectingCombat("target") then
-			for _, value in ipairs(arg) do
-				-- 可否施放减益
-				if CanDebuff(value) then
-					-- 施放减益
-					CastSpellByName(value)
-					return value
-				end
-			end
-		end
-
-		-- 切换目标
-		TargetNearestEnemy()
-
-		-- 切换后还是没目标
-		if not UnitExists("target") then
-			break
-		end
-	end
-	UIErrorsFrame:AddMessage("无可减益目标", 1.0, 1.0, 0.0, 53, 5)
 end

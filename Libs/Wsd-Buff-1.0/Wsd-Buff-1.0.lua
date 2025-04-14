@@ -1,16 +1,16 @@
 --[[
-Name: Wsd-Effect-1.0
+Name: Wsd-Buff-1.0
 Revision: $Rev: 10001 $
-Author(s): xhwsd
+Author(s): 树先生 (xhwsd@qq.com)
 Website: https://github.com/xhwsd
 Description: 效果相关操作库。
 Dependencies: AceLibrary
 ]]
 
 -- 主要版本
-local MAJOR_VERSION = "Wsd-Effect-1.0"
+local MAJOR_VERSION = "Wsd-Buff-1.0"
 -- 次要版本
-local MINOR_VERSION = "$Revision: 10004 $"
+local MINOR_VERSION = "$Revision: 10001 $"
 
 -- 检验AceLibrary
 if not AceLibrary then
@@ -23,7 +23,7 @@ if not AceLibrary:IsNewVersion(MAJOR_VERSION, MINOR_VERSION) then
 end
 
 -- 效果相关操作库。
----@class Wsd-Effect-1.0
+---@class Wsd-Buff-1.0
 local Library = {}
 
 -- 库激活
@@ -31,7 +31,21 @@ local Library = {}
 ---@param oldLib table 旧版库对象
 ---@param oldDeactivate function 旧版库停用函数
 local function activate(self, oldLib, oldDeactivate)
+	-- 新版本使用
+	Library = self
 
+	-- 旧版本释放
+	if oldLib then
+		-- ...
+	end
+
+	-- 新版本初始化
+	-- ...
+
+	-- 旧版本停用
+	if oldDeactivate then
+		oldDeactivate(oldLib)
+	end
 end
 
 -- 外部库加载
@@ -44,56 +58,61 @@ end
 
 --------------------------------
 
--- 效果提示
+-- 提示帧
 -- GameTooltip方法 https://warcraft.wiki.gg/wiki/Special:PrefixIndex/API_GameTooltip
 -- GameTooltip模板 https://warcraft.wiki.gg/wiki/XML/GameTooltip
-local EffectTooltip = CreateFrame("GameTooltip", "EffectTooltip", nil, "GameTooltipTemplate")
+local WsdBuffTooltip = CreateFrame("GameTooltip", "WsdBuffTooltip", nil, "GameTooltipTemplate")
 
--- 查找单位效果名称
+-- 取单位效果信息
 ---@param name string 效果名称
----@param unit? string 目标单位；额外还支持`mainhand`、`offhand`；缺省为`player`
+---@param unit? string 预取单位；额外还支持`mainhand`、`offhand`；缺省为`player`
 ---@return string kind 效果类型；可选值：`mainhand`、`offhand`、`buff`、`debuff`
----@return integer index 效果索引；从1开始
+---@return number index 效果索引；从1开始
 ---@return string text 效果文本
-function Library:FindName(name, unit)
+---@return string texture 纹理路径
+---@return number applications 应用层数；仅在`buff`、`debuff`时有效
+---@return string dispelType 驱散类型；仅在`debuff`时有效
+function Library:GetUnit(name, unit)
 	unit = unit or "player"
-
 	if not name then
 		return
 	end
 
-	EffectTooltip:SetOwner(UIParent, "ANCHOR_NONE")
+	WsdBuffTooltip:SetOwner(UIParent, "ANCHOR_NONE")
 
 	-- 适配单位
 	if string.lower(unit) == "mainhand" then
 		-- 主手
-		EffectTooltip:ClearLines()
-		EffectTooltip:SetInventoryItem("player", GetInventorySlotInfo("MainHandSlot"));
-		for index = 1, EffectTooltip:NumLines() do
-			local text = getglobal("EffectTooltipTextLeft" .. index):GetText() or ""
+		local id, texture = GetInventorySlotInfo("MainHandSlot")
+		WsdBuffTooltip:ClearLines()
+		WsdBuffTooltip:SetInventoryItem("player", id);
+		for index = 1, WsdBuffTooltip:NumLines() do
+			local text = getglobal("WsdBuffTooltipTextLeft" .. index):GetText() or ""
 			if string.find(text, name) then
-				return "mainhand", index, text
+				return "mainhand", index, text, texture
 			end
 		end
 	elseif string.lower(unit) == "offhand" then
 		-- 副手
-		EffectTooltip:ClearLines()
-		EffectTooltip:SetInventoryItem("player", GetInventorySlotInfo("SecondaryHandSlot"))
-		for index = 1, EffectTooltip:NumLines() do
-			local text = getglobal("EffectTooltipTextLeft" .. index):GetText() or ""
+		local id, texture = GetInventorySlotInfo("SecondaryHandSlot")
+		WsdBuffTooltip:ClearLines()
+		WsdBuffTooltip:SetInventoryItem("player", id)
+		for index = 1, WsdBuffTooltip:NumLines() do
+			local text = getglobal("WsdBuffTooltipTextLeft" .. index):GetText() or ""
 			if string.find(text, name) then
-				return "offhand", index, text
+				return "offhand", index, text, texture
 			end
 		end
 	else
 		-- 增益
 		local index = 1
 		while UnitBuff(unit, index) do
-			EffectTooltip:ClearLines()
-			EffectTooltip:SetUnitBuff(unit, index)
-			local text = EffectTooltipTextLeft1:GetText() or ""
+			WsdBuffTooltip:ClearLines()
+			WsdBuffTooltip:SetUnitBuff(unit, index)
+			local text = WsdBuffTooltipTextLeft1:GetText() or ""
 			if string.find(text, name) then
-				return "buff", index, text
+				local texture, applications = UnitBuff(unit, index)
+				return "buff", index, text, texture, applications
 			end
 			index = index + 1
 		end
@@ -101,11 +120,12 @@ function Library:FindName(name, unit)
 		-- 减益
 		index = 1
 		while UnitDebuff(unit, index) do
-			EffectTooltip:ClearLines()
-			EffectTooltip:SetUnitDebuff(unit, index)
-			local text = EffectTooltipTextLeft1:GetText() or ""
+			WsdBuffTooltip:ClearLines()
+			WsdBuffTooltip:SetUnitDebuff(unit, index)
+			local text = WsdBuffTooltipTextLeft1:GetText() or ""
 			if string.find(text, name) then
-				return "debuff", index, text
+				local texture, applications, dispelType = UnitDebuff(unit, index)
+				return "debuff", index, text, texture, applications, dispelType
 			end
 			index = index + 1
 		end
@@ -114,26 +134,28 @@ end
 
 -- 取自身效果信息
 ---@param name string 效果名称
----@return integer index 效果索引；从1开始
+---@return number index 效果索引；从1开始
 ---@return string text 效果文本
----@return integer timeleft 效果剩余时间
+---@return number timeleft 效果剩余时间
 ---@return string texture 效果图标
-function Library:GetInfo(name)
-	EffectTooltip:SetOwner(UIParent, "ANCHOR_NONE")
+---@return number cancelled 直到取消（如光环、形态、影身）
+function Library:GetPlayer(name)
+	WsdBuffTooltip:SetOwner(UIParent, "ANCHOR_NONE")
 	for id = 0, 64 do
 		-- https://warcraft.wiki.gg/wiki/API_GetPlayerBuff?oldid=3951140
-		local index = GetPlayerBuff(id)
+		local index, cancelled = GetPlayerBuff(id)
+		-- TODO: 无法确认这里是否从1开始 xhwsd 2025-4-4
 		if index >= 0 then
-			EffectTooltip:ClearLines()
+			WsdBuffTooltip:ClearLines()
 			-- https://warcraft.wiki.gg/wiki/API_GameTooltip_SetPlayerBuff?oldid=323371
-			EffectTooltip:SetPlayerBuff(index)
-			local text = EffectTooltipTextLeft1:GetText() or ""
+			WsdBuffTooltip:SetPlayerBuff(index)
+			local text = WsdBuffTooltipTextLeft1:GetText() or ""
 			if string.find(text, name) then
 				-- https://warcraft.wiki.gg/wiki/API_GetPlayerBuffTimeLeft?oldid=2250730
 				local timeleft = GetPlayerBuffTimeLeft(index)
 				-- https://warcraft.wiki.gg/wiki/API_GetPlayerBuffTexture?oldid=4896681
 				local texture = GetPlayerBuffTexture(index)
-				return index, text, timeleft, texture
+				return index, text, timeleft, texture, cancelled
 			end
 		end
 	end
