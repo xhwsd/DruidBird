@@ -71,5 +71,14 @@
 > 以上为大致逻辑，还可通过选项控制！
 
 
+### 诅咒
+
+```
+/cursive multicurse 虫群|HIGHEST_HP|warnings,priotarget,minhp=1000
+```
+
+> 基于`Cursive`插件实现给目标上虫群，更多选项或命令请参考[文档](https://github.com/pepopo978/Cursive/blob/master/README.md)
+
+
 ## 参考天赋
 [![跳转至天赋模拟器](Talent.png)](https://talents.turtle-wow.org/druid?points=oAaYYIFYRLFABAAAAAAAAAAAAAAAFAAoDAAAAAAAAAA=)
