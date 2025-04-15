@@ -77,7 +77,7 @@
 /cursive multicurse 虫群|HIGHEST_HP|warnings,priotarget,minhp=1000
 ```
 
-> 基于`Cursive`插件实现给目标上虫群，更多选项或命令请参考[文档](https://github.com/pepopo978/Cursive/blob/master/README.md)
+> 基于`Cursive`插件实现给附近战斗中怪补虫群，更多选项或命令请参考[文档](https://github.com/pepopo978/Cursive/blob/master/README.md)
 
 
 ## 参考天赋
