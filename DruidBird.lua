@@ -179,7 +179,7 @@ function DruidBird:OnInitialize()
 							solar = {
 								type = "toggle",
 								name = "日蚀",
-								desc = "有日蚀时",
+								desc = "有日蚀时补虫群",
 								order = 1,
 								get = function()
 									return self.db.profile.timing.insectSwarm.solar
@@ -191,7 +191,7 @@ function DruidBird:OnInitialize()
 							solarWait = {
 								type = "toggle",
 								name = "日蚀等待",
-								desc = "日蚀结束等待时",
+								desc = "日蚀结束等待时补虫群",
 								order = 2,
 								get = function()
 									return self.db.profile.timing.insectSwarm.solarWait
@@ -203,7 +203,7 @@ function DruidBird:OnInitialize()
 							lunar = {
 								type = "toggle",
 								name = "月蚀",
-								desc = "有月蚀时",
+								desc = "有月蚀时补虫群",
 								order = 3,
 								get = function()
 									return self.db.profile.timing.insectSwarm.lunar
@@ -215,7 +215,7 @@ function DruidBird:OnInitialize()
 							lunarWait = {
 								type = "toggle",
 								name = "月蚀等待",
-								desc = "月蚀结束等待时",
+								desc = "月蚀结束等待时补虫群",
 								order = 4,
 								get = function()
 									return self.db.profile.timing.insectSwarm.lunarWait
@@ -227,7 +227,7 @@ function DruidBird:OnInitialize()
 							normal = {
 								type = "toggle",
 								name = "常规",
-								desc = "无日蚀或月蚀且未等待时",
+								desc = "无日蚀或月蚀且未等待时补虫群",
 								order = 5,
 								get = function()
 									return self.db.profile.timing.insectSwarm.normal
@@ -247,7 +247,7 @@ function DruidBird:OnInitialize()
 							solar = {
 								type = "toggle",
 								name = "日蚀",
-								desc = "有日蚀时",
+								desc = "有日蚀时补月火术",
 								order = 1,
 								get = function()
 									return self.db.profile.timing.moonfire.solar
@@ -259,7 +259,7 @@ function DruidBird:OnInitialize()
 							solarWait = {
 								type = "toggle",
 								name = "日蚀等待",
-								desc = "日蚀结束等待时",
+								desc = "日蚀结束等待时月火术",
 								order = 2,
 								get = function()
 									return self.db.profile.timing.moonfire.solarWait
@@ -271,7 +271,7 @@ function DruidBird:OnInitialize()
 							lunar = {
 								type = "toggle",
 								name = "月蚀",
-								desc = "有月蚀时",
+								desc = "有月蚀时月火术",
 								order = 3,
 								get = function()
 									return self.db.profile.timing.moonfire.lunar
@@ -283,7 +283,7 @@ function DruidBird:OnInitialize()
 							lunarWait = {
 								type = "toggle",
 								name = "月蚀等待",
-								desc = "月蚀结束等待时",
+								desc = "月蚀结束等待时月火术",
 								order = 4,
 								get = function()
 									return self.db.profile.timing.moonfire.lunarWait
@@ -295,7 +295,7 @@ function DruidBird:OnInitialize()
 							normal = {
 								type = "toggle",
 								name = "常规",
-								desc = "无日蚀或月蚀且未等待时",
+								desc = "无日蚀或月蚀且未等待时补月火术",
 								order = 5,
 								get = function()
 									return self.db.profile.timing.moonfire.normal
@@ -315,7 +315,7 @@ function DruidBird:OnInitialize()
 							balance = {
 								type = "toggle",
 								name = "万物平衡",
-								desc = "在常规和斩杀阶段有万物平衡时",
+								desc = "在常规和斩杀阶段有万物平衡时施放星火术",
 								order = 1,
 								get = function()
 									return self.db.profile.timing.starfire.balance
@@ -335,7 +335,7 @@ function DruidBird:OnInitialize()
 							solar = {
 								type = "toggle",
 								name = "日蚀",
-								desc = "有日蚀时",
+								desc = "有日蚀时使用饰品1",
 								order = 1,
 								get = function()
 									return self.db.profile.timing.jewelry1.solar
@@ -347,7 +347,7 @@ function DruidBird:OnInitialize()
 							lunar = {
 								type = "toggle",
 								name = "月蚀",
-								desc = "有月蚀时",
+								desc = "有月蚀时使用饰品1",
 								order = 2,
 								get = function()
 									return self.db.profile.timing.jewelry1.lunar
@@ -367,7 +367,7 @@ function DruidBird:OnInitialize()
 							solar = {
 								type = "toggle",
 								name = "日蚀",
-								desc = "有日蚀时",
+								desc = "有日蚀时使用饰品2",
 								order = 1,
 								get = function()
 									return self.db.profile.timing.jewelry2.solar
@@ -379,7 +379,7 @@ function DruidBird:OnInitialize()
 							lunar = {
 								type = "toggle",
 								name = "月蚀",
-								desc = "有月蚀时",
+								desc = "有月蚀时使用饰品2",
 								order = 2,
 								get = function()
 									return self.db.profile.timing.jewelry2.lunar
@@ -393,7 +393,7 @@ function DruidBird:OnInitialize()
 					kill = {
 						type = "range",
 						name = "斩杀",
-						desc = "目标生命小于或等于该百分比时",
+						desc = "目标生命小于或等于该百分比时为斩杀",
 						order = 6,
 						min = 0,
 						max = 100,
