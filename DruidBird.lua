@@ -505,14 +505,14 @@ function DruidBird:SpecialEvents_PlayerBuffGained(buff, index)
 		return
 	end
 
-	-- 更新状态和时间
-	eclipse.state = buff
-	eclipse.time = 0
-
 	-- 取消延迟事件
 	if self:IsEventScheduled("DruidBird_WaitTimeout") then
 		self:CancelScheduledEvent("DruidBird_WaitTimeout")
 	end
+
+	-- 更新状态和时间
+	eclipse.state = buff
+	eclipse.time = 0
 end
 
 -- 自身失去增益效果
@@ -532,13 +532,13 @@ function DruidBird:SpecialEvents_PlayerBuffLost(buff, index)
 		return
 	end
 
-	-- 更新时间
-	eclipse.time = GetTime() + wait
-
 	-- 取消已有延迟事件
 	if self:IsEventScheduled("DruidBird_WaitTimeout") then
 		self:CancelScheduledEvent("DruidBird_WaitTimeout")
 	end
+
+	-- 更新时间
+	eclipse.time = GetTime() + wait
 
 	-- 延迟触发事件
 	self:ScheduleEvent("DruidBird_WaitTimeout", self.DruidBird_WaitTimeout, wait, self)
@@ -568,52 +568,82 @@ function DruidBird:Eclipse()
 	else
 		-- 抉择施法
 		if eclipse.state == "日蚀" then
-			-- 有日蚀时，自然伤害提高
-			if self.db.profile.timing.insectSwarm.solar and eclipse.time == 0 and CanDebuff("虫群") then
-				-- 有日蚀时；施持续自然伤害
-				CastSpellByName("虫群")
-			elseif self.db.profile.timing.moonfire.solar and eclipse.time == 0 and CanDebuff("月火术") then
-				-- 有日蚀时；愤怒法力消耗降低
-				CastSpellByName("月火术")
-			elseif self.db.profile.timing.jewelry1.solar and eclipse.time == 0 and CanJewelry(13) then
-				-- 有日蚀时；使用饰品1
-				UseInventoryItem(13)
-			elseif self.db.profile.timing.jewelry2.solar and eclipse.time == 0 and CanJewelry(14) then
-				-- 有日蚀时；使用饰品2
-				UseInventoryItem(14)
-			elseif self.db.profile.timing.insectSwarm.solarWait and eclipse.time and CanDebuff("虫群") then
-				-- 日蚀等待时；持续自然伤害
-				CastSpellByName("虫群")
-			elseif self.db.profile.timing.moonfire.solarWait and eclipse.time and CanDebuff("月火术") then
-				-- 日蚀等待时；愤怒法力消耗降低
-				CastSpellByName("月火术")
+			-- 日蚀阶段
+			if eclipse.time == 0 then
+				-- 有日蚀时
+				if Buff:GetUnit("斗转星移") then
+					-- 有斗转星移时：只打愤怒
+					CastSpellByName("愤怒")
+				else
+					-- 无斗转星移时
+					if self.db.profile.timing.insectSwarm.solar and CanDebuff("虫群") then
+						-- 施持续自然伤害
+						CastSpellByName("虫群")
+					elseif self.db.profile.timing.moonfire.solar and CanDebuff("月火术") then
+						-- 有愤怒法力消耗降低
+						CastSpellByName("月火术")
+					elseif self.db.profile.timing.jewelry1.solar and CanJewelry(13) then
+						-- 使用饰品1
+						UseInventoryItem(13)
+					elseif self.db.profile.timing.jewelry2.solar and CanJewelry(14) then
+						-- 使用饰品2
+						UseInventoryItem(14)
+					else
+						-- 造成自然伤害
+						CastSpellByName("愤怒")
+					end
+				end
 			else
-				-- 造成自然伤害，暴击获得月蚀
-				CastSpellByName("愤怒")
+				-- 日蚀等待时
+				if self.db.profile.timing.insectSwarm.solarWait and CanDebuff("虫群") then
+					-- 持续自然伤害
+					CastSpellByName("虫群")
+				elseif self.db.profile.timing.moonfire.solarWait and CanDebuff("月火术") then
+					-- 愤怒法力消耗降低
+					CastSpellByName("月火术")
+				else
+					-- 暴击获得月蚀
+					CastSpellByName("愤怒")
+				end
 			end
 		elseif eclipse.state == "月蚀" then
-			-- 有月蚀时，奥术伤害提高
-			if self.db.profile.timing.moonfire.lunar and eclipse.time == 0 and CanDebuff("月火术") then
-				-- 有月蚀时，持续奥术伤害
-				CastSpellByName("月火术")
-			elseif self.db.profile.timing.insectSwarm.lunar and eclipse.time == 0 and CanDebuff("虫群") then
-				-- 有月蚀时，星火施法时间缩短
-				CastSpellByName("虫群")
-			elseif self.db.profile.timing.jewelry1.lunar and eclipse.time == 0 and CanJewelry(13) then
-				-- 有月蚀时，使用饰品1
-				UseInventoryItem(13)
-			elseif self.db.profile.timing.jewelry2.lunar and eclipse.time == 0 and CanJewelry(14) then
-				-- 有月蚀时，使用饰品2
-				UseInventoryItem(14)
-			elseif self.db.profile.timing.moonfire.lunarWait and eclipse.time and CanDebuff("月火术") then
-				-- 月蚀等待时，持续奥术伤害
-				CastSpellByName("月火术")
-			elseif self.db.profile.timing.insectSwarm.lunarWait and eclipse.time and CanDebuff("虫群") then
-				-- 月蚀等待时，星火施法时间缩短
-				CastSpellByName("虫群")
+			-- 月蚀阶段
+			if eclipse.time == 0 then
+				-- 有月蚀时
+				if Buff:GetUnit("斗转星移") then
+					-- 有斗转星移时：只打星火
+					CastSpellByName("星火术")
+				else
+					-- 无斗转星移时
+					if self.db.profile.timing.moonfire.lunar and CanDebuff("月火术") then
+						-- 持续奥术伤害
+						CastSpellByName("月火术")
+					elseif self.db.profile.timing.insectSwarm.lunar and CanDebuff("虫群") then
+						-- 星火施法时间缩短
+						CastSpellByName("虫群")
+					elseif self.db.profile.timing.jewelry1.lunar and CanJewelry(13) then
+						-- 使用饰品1
+						UseInventoryItem(13)
+					elseif self.db.profile.timing.jewelry2.lunar and CanJewelry(14) then
+						-- 使用饰品2
+						UseInventoryItem(14)
+					else
+						-- 造成奥术伤害
+						CastSpellByName("星火术")
+					end
+				end
 			else
-				-- 造成奥术伤害，暴击获得日蚀
-				CastSpellByName("星火术")
+				-- 月蚀等待时
+				if self.db.profile.timing.moonfire.lunarWait and CanDebuff("月火术") then
+					-- 持续奥术伤害
+					CastSpellByName("月火术")
+				elseif self.db.profile.timing.insectSwarm.lunarWait and CanDebuff("虫群") then
+					-- 星火施法时间缩短
+					CastSpellByName("虫群")
+				else
+					-- 暴击获得日蚀
+					CastSpellByName("星火术")
+				end
 			end
 		elseif self.db.profile.timing.insectSwarm.normal and CanDebuff("虫群") then
 			-- 补虫群
@@ -638,6 +668,7 @@ function DruidBird:Eclipse()
 	-- 月蚀：增加25%奥术伤害，持续15秒，冷却30秒
 	-- 万物平衡：下一次星火术施法时间减少0.75秒，可累积3次
 	-- 自然恩赐：下一次愤怒法力值消耗降低50%，可累积3次
+	-- 斗转星移：施法速度提高10%，持续8秒（8T3触发效果）
 end
 
 -- 纠缠；中断施法，使用纠缠根须

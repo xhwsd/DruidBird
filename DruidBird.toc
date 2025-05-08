@@ -1,9 +1,9 @@
 ## Interface: 11200
 ## Title: DruidBird
-## Title-zhCN: |CFF33AAFF[Wsd]|R鸟德 v2.2.1
+## Title-zhCN: |CFF33AAFF[Wsd]|R鸟德 v2.2.2
 ## Notes-zhCN: 适配乌龟服的鸟德辅助插件
 ## Author: 树先生（xhwsd@qq.com）
-## Version: 2.2.1
+## Version: 2.2.2
 ## Dependencies: !Libs
 ## OptionalDeps: AceLibrary, AceConsole-2.0, AceDebug-2.0, FuBarPlugin-2.0, Tablet-2.0, SpecialEvents-Aura-2.0, CastLib-1.0 
 ## SavedVariablesPerCharacter: DruidBirdDB
