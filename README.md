@@ -3,17 +3,17 @@
 > __自娱自乐，不做任何保证！__  
 > 如遇到BUG可反馈至 xhwsd@qq.com 邮箱
 
-![功能预览](Preview.png)
-
 
 ## 功能
+![功能预览](Preview.png)
+
 - 可视化设置
 - 无脑一键
 - 使用饰品
 - 等...
 
 
-## 安装
+## 使用
 - 安装`!Libs`插件
 - [可选][[文档](https://github.com/pepopo978/Cursive/)][[下载](https://github.com/pepopo978/Cursive/archive/master.zip)]安装`Cursive`插件，安装后将区分减益是否是自己施放
     - [依赖][[文档](https://github.com/balakethelock/SuperWoW/)][[下载](https://github.com/balakethelock/SuperWoW/releases/download/Release/SuperWoW.release.1.5.1.zip)]安装`SuperWoW`模组
@@ -25,27 +25,18 @@
 > 确保插件最新版本、已适配乌龟服、目录名正确（如删除末尾`-main`、`-master`等）
 
 
-## 使用
-- 单个目标无脑狂按`日食`宏
-- 2~3个目标可上DOT，然后无脑`日食`宏
-- 多个目标直接AOE
-
-> 仅供参考，具体自行抉择！
-
-
 ## 可用宏
-
 
 ### 日食
 
-> 根据自身增益输出法术，关于鸟德知识推荐参考[1.17.2 咕咕PVE不完全指北](https://luntan.turtle-wow.org/viewtopic.php?t=1241)
+> 根据自身增益输出法术
 
-```
+```lua
 /script -- CastSpellByName("愤怒")
 /script DruidBird:Eclipse()
 ```
 
-逻辑描述：
+大致逻辑：
 - 斩杀阶段
     - 有万物平衡时
         - 打星火术
@@ -76,7 +67,7 @@
     - 打愤怒
 
 
-> 以上为大致逻辑，还可通过选项控制！
+> 以上为大致逻辑，可通过选项控制！
 
 
 ### 诅咒
@@ -88,5 +79,16 @@
 > 基于`Cursive`插件实现给附近战斗中怪补虫群，更多选项或命令请参考[文档](https://github.com/pepopo978/Cursive/blob/master/README.md)
 
 
-## 参考天赋
-[![跳转至天赋模拟器](Talent.png)](https://talents.turtle-wow.org/druid?points=oAaYYIFYRLFABAAAAAAAAAAAAAAAFAAoDAAAAAAAAAA=)
+## 参考
+
+### 天赋
+[![跳转至天赋模拟器](Talent.png)](https://talents.turtle-wow.org/druid?points=oCaYYIFYBLFABAAAAAAAAAAAAAAAFAAoDAAAAAAAAAA=)
+
+
+### 文档
+- [1.17.2 咕咕PVE不完全指北](https://luntan.turtle-wow.org/viewtopic.php?t=1241)
+
+
+## 鸣谢
+- `Crazydru#4246`
+- `jiang#1505`

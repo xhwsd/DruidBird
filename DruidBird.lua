@@ -38,39 +38,6 @@ local eclipse = {
 	time = 0,
 }
 
--- 可否减益
----@param debuff string 减益名称
----@param unit? string 目标单位；缺省为`target`
----@return boolean can 可否施法
-local function CanDebuff(debuff, unit)
-	unit = unit or "target"
-
-	-- 无减益
-	if not Buff:GetUnit(debuff, unit) then
-		-- 可以施法
-		return true
-	end
-
-	-- 方法`Cursive.curses:HasCurse`来源`Cursive`插件
-	if Cursive and Cursive.curses then
-		-- 返回值`guid`来源`SuperWoW`模组
-		local _, guid = UnitExists(unit)
-		return Cursive.curses:HasCurse(debuff, guid) ~= true
-	else
-		-- 无法判断，不可施法
-		return false
-	end
-end
-
--- 可否饰品
----@param slot number 装备栏位；`13`为饰品1，`14`为饰品2
----@return boolean used 可否使用
-local function CanJewelry(slot)
-	-- 有日蚀时，使用饰品1
-	local start, _, enable = GetInventoryItemCooldown("player", slot)
-	return start == 0 and enable == 1
-end
-
 -- 插件初始化
 function DruidBird:OnInitialize()
 	-- 精简标题
@@ -559,7 +526,7 @@ function DruidBird:Eclipse()
 	local health = Health:GetRemaining("target")
 	if health <= self.db.profile.timing.kill then
 		-- 尽快斩杀
-		if self.db.profile.timing.starfire.balance and Buff:GetUnit("万物平衡") then
+		if self.db.profile.timing.starfire.balance and Buff:FindUnit("万物平衡") then
 			-- 有万物平衡，打星火术（愤怒有弹道时间）
 			CastSpellByName("星火术")
 		else
@@ -571,23 +538,24 @@ function DruidBird:Eclipse()
 			-- 日蚀阶段
 			if eclipse.time == 0 then
 				-- 有日蚀时
-				if Buff:GetUnit("斗转星移") then
+				if Buff:FindUnit("斗转星移") then
 					-- 有斗转星移时：只打愤怒
 					CastSpellByName("愤怒")
 				else
 					-- 无斗转星移时
-					if self.db.profile.timing.insectSwarm.solar and CanDebuff("虫群") then
+					if self.db.profile.timing.insectSwarm.solar and self.helper:CanDebuff("虫群") then
 						-- 施持续自然伤害
 						CastSpellByName("虫群")
-					elseif self.db.profile.timing.moonfire.solar and CanDebuff("月火术") then
+					elseif self.db.profile.timing.moonfire.solar and self.helper:CanDebuff("月火术") then
 						-- 有愤怒法力消耗降低
 						CastSpellByName("月火术")
-					elseif self.db.profile.timing.jewelry1.solar and CanJewelry(13) then
+					elseif self.db.profile.timing.jewelry1.solar and self.helper:CanJewelry(13) then
 						-- 使用饰品1
 						UseInventoryItem(13)
-					elseif self.db.profile.timing.jewelry2.solar and CanJewelry(14) then
+					elseif self.db.profile.timing.jewelry2.solar and self.helper:CanJewelry(14) then
 						-- 使用饰品2
 						UseInventoryItem(14)
+						
 					else
 						-- 造成自然伤害
 						CastSpellByName("愤怒")
@@ -595,10 +563,10 @@ function DruidBird:Eclipse()
 				end
 			else
 				-- 日蚀等待时
-				if self.db.profile.timing.insectSwarm.solarWait and CanDebuff("虫群") then
+				if self.db.profile.timing.insectSwarm.solarWait and self.helper:CanDebuff("虫群") then
 					-- 持续自然伤害
 					CastSpellByName("虫群")
-				elseif self.db.profile.timing.moonfire.solarWait and CanDebuff("月火术") then
+				elseif self.db.profile.timing.moonfire.solarWait and self.helper:CanDebuff("月火术") then
 					-- 愤怒法力消耗降低
 					CastSpellByName("月火术")
 				else
@@ -610,21 +578,21 @@ function DruidBird:Eclipse()
 			-- 月蚀阶段
 			if eclipse.time == 0 then
 				-- 有月蚀时
-				if Buff:GetUnit("斗转星移") then
+				if Buff:FindUnit("斗转星移") then
 					-- 有斗转星移时：只打星火
 					CastSpellByName("星火术")
 				else
 					-- 无斗转星移时
-					if self.db.profile.timing.moonfire.lunar and CanDebuff("月火术") then
+					if self.db.profile.timing.moonfire.lunar and self.helper:CanDebuff("月火术") then
 						-- 持续奥术伤害
 						CastSpellByName("月火术")
-					elseif self.db.profile.timing.insectSwarm.lunar and CanDebuff("虫群") then
+					elseif self.db.profile.timing.insectSwarm.lunar and self.helper:CanDebuff("虫群") then
 						-- 星火施法时间缩短
 						CastSpellByName("虫群")
-					elseif self.db.profile.timing.jewelry1.lunar and CanJewelry(13) then
+					elseif self.db.profile.timing.jewelry1.lunar and self.helper:CanJewelry(13) then
 						-- 使用饰品1
 						UseInventoryItem(13)
-					elseif self.db.profile.timing.jewelry2.lunar and CanJewelry(14) then
+					elseif self.db.profile.timing.jewelry2.lunar and self.helper:CanJewelry(14) then
 						-- 使用饰品2
 						UseInventoryItem(14)
 					else
@@ -634,10 +602,10 @@ function DruidBird:Eclipse()
 				end
 			else
 				-- 月蚀等待时
-				if self.db.profile.timing.moonfire.lunarWait and CanDebuff("月火术") then
+				if self.db.profile.timing.moonfire.lunarWait and self.helper:CanDebuff("月火术") then
 					-- 持续奥术伤害
 					CastSpellByName("月火术")
-				elseif self.db.profile.timing.insectSwarm.lunarWait and CanDebuff("虫群") then
+				elseif self.db.profile.timing.insectSwarm.lunarWait and self.helper:CanDebuff("虫群") then
 					-- 星火施法时间缩短
 					CastSpellByName("虫群")
 				else
@@ -645,13 +613,13 @@ function DruidBird:Eclipse()
 					CastSpellByName("星火术")
 				end
 			end
-		elseif self.db.profile.timing.insectSwarm.normal and CanDebuff("虫群") then
+		elseif self.db.profile.timing.insectSwarm.normal and self.helper:CanDebuff("虫群") then
 			-- 补虫群
 			CastSpellByName("虫群")
-		elseif self.db.profile.timing.moonfire.normal and CanDebuff("月火术") then
+		elseif self.db.profile.timing.moonfire.normal and self.helper:CanDebuff("月火术") then
 			-- 补月火
 			CastSpellByName("月火术")
-		elseif self.db.profile.timing.starfire.balance and Buff:GetUnit("万物平衡") then
+		elseif self.db.profile.timing.starfire.balance and Buff:FindUnit("万物平衡") then
 			-- 有万物平衡，打星火术（愤怒有弹道时间）
 			-- 这将导致进入月蚀阶段不长，可能还会进入日蚀阶段
 			CastSpellByName("星火术")
@@ -691,7 +659,7 @@ function DruidBird:Dot(spell, ...)
 	end
 
 	for _, debuff in ipairs(arg) do
-		if not Buff:GetUnit(debuff, "target") then
+		if not Buff:FindUnit(debuff, "target") then
 			CastSpellByName(debuff)
 			return debuff
 		end
