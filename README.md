@@ -86,7 +86,7 @@
 
 
 ### 文档
-- [1.17.2 咕咕PVE不完全指北](https://luntan.turtle-wow.org/viewtopic.php?t=1241)
+- [1.17.2 咕咕PVE不完全指北](https://luntan.turtle-wow.org/viewtopic.php?t=1241) by Crazydru
 
 
 ## 鸣谢
