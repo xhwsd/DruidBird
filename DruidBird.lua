@@ -25,10 +25,10 @@ local AuraEvent = AceLibrary("SpecialEvents-Aura-2.0")
 -- 施法库
 local CastLib = AceLibrary("CastLib-1.0")
 
----@type Wsd-Buff-1.0
-local Buff = AceLibrary("Wsd-Buff-1.0")
----@type Wsd-Health-1.0
-local Health = AceLibrary("Wsd-Health-1.0")
+---@type KuBa-Buff-1.0
+local Buff = AceLibrary("KuBa-Buff-1.0")
+---@type KuBa-Health-1.0
+local Health = AceLibrary("KuBa-Health-1.0")
 
 -- 日食
 local eclipse = {
@@ -659,13 +659,19 @@ function DruidBird:Dot(spell, ...)
 end
 
 --[[
+光身技能属性（2025-6-12）：
+
+虫群：降低命中2%、持续18秒自然伤害；造成伤害后有30%几率获得万物平衡
+月火术：立即伤害、持续18秒奥术伤害；造成伤害后有30%几率获得自然恩赐
+
 愤怒：造成自然伤害；造成致命一击后有概率获得月蚀
 星火术：施法时间3.5秒；造成奥术伤害；造成致命一击后有概率获得日蚀
-月火术：立即伤害、持续18秒奥术伤害；造成伤害后有30%几率获得自然恩赐
-虫群：降低命中2%、持续18秒自然伤害；造成伤害后有30%几率获得万物平衡
-日蚀：增加25%自然伤害，持续15秒，冷却30秒
-月蚀：增加25%奥术伤害，持续15秒，冷却30秒
-万物平衡：下一次星火术施法时间减少0.75秒，可累积3次
+
+自然之赐：暴击触发，下个施法时间减少0.5秒
+万物平衡：下一次星火术施法时间减少0.8秒，可累积3次
 自然恩赐：下一次愤怒法力值消耗降低50%，可累积3次
+日蚀：增加30%自然伤害，持续15秒，冷却30秒
+月蚀：增加30%奥术伤害，持续15秒，冷却30秒
+
 斗转星移：施法速度提高10%，持续8秒（8T3触发效果）
 ]]

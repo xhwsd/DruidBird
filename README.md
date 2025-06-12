@@ -1,9 +1,5 @@
 # 鸟德辅助插件
 
-> __自娱自乐，不做任何保证！__  
-> 如遇到BUG可反馈至 xhwsd@qq.com 邮箱
-
-
 ## 功能
 ![功能预览](Preview.png)
 
@@ -87,8 +83,3 @@
 
 ### 文档
 - [1.17.2 咕咕PVE不完全指北](https://luntan.turtle-wow.org/viewtopic.php?t=1241) by Crazydru
-
-
-## 鸣谢
-- `jiang#1505`
-- `Crazydru#4246`

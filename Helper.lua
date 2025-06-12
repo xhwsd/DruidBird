@@ -5,8 +5,8 @@ end
 -- 定义辅助对象
 local Helper = {}
 
----@type Wsd-Buff-1.0
-local Buff = AceLibrary("Wsd-Buff-1.0")
+---@type KuBa-Buff-1.0
+local Buff = AceLibrary("KuBa-Buff-1.0")
 
 -- 检验饰品是否可用
 ---@param slot number 装备栏位；`13`为饰品1，`14`为饰品2
