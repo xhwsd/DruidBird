@@ -1,6 +1,5 @@
 # 鸟德辅助插件
-> 如有建议或BUG请至[ku-ba/DruidBird](https://gitee.com/ku-ba/DruidBird)代码库提交问题！
-
+> 如有建议或BUG请至[ku-ba/DruidBird](https://gitee.com/ku-ba/DruidBird)代码库[提交问题](https://gitee.com/ku-ba/DruidBird/issues)！
 
 ## 功能
 ![功能预览](Preview.png)
