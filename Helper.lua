@@ -34,5 +34,66 @@ function Helper:CanDebuff(debuff, unit)
 	end
 end
 
+-- 取当前形态
+---@return string|nil name 形态名称,为空表示无形态
+function Helper:GetForm()
+	-- 取当前形态
+	for index = GetNumShapeshiftForms(), 1, -1 do
+		local _, name, active = GetShapeshiftFormInfo(index)
+		if active then
+			return name
+		end
+	end
+end
+
+-- 切换到指定名称形态
+---@param name? string|nil 形态名称；为空取消形态
+---@return boolean success 成功返回真，否则返回假
+function Helper:SwitchForm(name)
+	if name then
+		for index = GetNumShapeshiftForms(), 1, -1 do
+			local _, current, active = GetShapeshiftFormInfo(index)
+			if string.find(current, name) then
+				if not active then
+					CastShapeshiftForm(index)
+				end
+				return true
+			end
+		end
+		return false
+	else
+		for index = GetNumShapeshiftForms(), 1, -1 do
+			local _, _, active = GetShapeshiftFormInfo(index)
+			if active then
+				CastShapeshiftForm(index)
+				return true
+			end
+		end
+		return true
+	end
+end
+
+-- 使用物品
+---@param item string 物品名称，支持包或身的物品
+---@return number bag 背包标识或装备槽
+---@return number|nil slot 背包槽
+function Helper:UseItem(item)
+	-- 查找物品
+	local bag, slot = FindItemInfo(item)
+	if not bag then
+		return
+	end
+
+	if slot then
+		-- 包中物品
+		UseContainerItem(bag, slot)
+		return bag, slot
+	else
+		-- 身上物品
+		UseInventoryItem(bag)
+		return bag
+	end
+end
+
 -- 将辅助注入到插件中
 DruidBird.helper = Helper

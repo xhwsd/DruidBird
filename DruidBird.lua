@@ -100,6 +100,10 @@ function DruidBird:OnInitialize()
 				-- 有月蚀时
 				lunar = true
 			},
+			-- 形态
+			form = true,
+			-- 神像
+			idol = false,
 			-- 斩杀起始剩余
 			kill = 10,
 		},
@@ -357,11 +361,35 @@ function DruidBird:OnInitialize()
 							},
 						}
 					},
+					form = {
+						type = "toggle",
+						name = "形态",
+						desc = "是否自动切换到枭兽形态",
+						order = 7,
+						get = function()
+							return self.db.profile.timing.form
+						end,
+						set = function(value)
+							self.db.profile.timing.form = value
+						end
+					},
+					idol = {
+						type = "toggle",
+						name = "神像",
+						desc = "是否自动切换月牙和潮汐神像",
+						order = 8,
+						get = function()
+							return self.db.profile.timing.idol
+						end,
+						set = function(value)
+							self.db.profile.timing.idol = value
+						end
+					},
 					kill = {
 						type = "range",
 						name = "斩杀",
 						desc = "目标生命小于或等于该百分比时为斩杀",
-						order = 6,
+						order = 9,
 						min = 0,
 						max = 100,
 						step = 1,
@@ -457,6 +485,8 @@ end
 
 -- 提示更新
 function DruidBird:OnTooltipUpdate()
+	-- 置标题
+	Tablet:SetTitle(self.title .. " v" .. self.version)
 	-- 置小地图图标点燃提示
 	Tablet:SetHint("\n右键 - 显示插件选项")
 end
@@ -522,12 +552,20 @@ end
 
 -- 日食；根据自身增益输出法术
 function DruidBird:Eclipse()
+	-- 切换形态
+	if self.db.profile.timing.form then
+		self.helper:SwitchForm("枭兽形态")
+	end
+
 	-- 抉择法术
-	local health = Health:GetRemaining("target")
-	if health <= self.db.profile.timing.kill then
+	if Health:GetRemaining("target") <= self.db.profile.timing.kill then
+		-- 切换神像
+		if self.db.profile.timing.idol then
+			self.helper:UseItem("潮汐神像")
+		end
+
 		-- 尽快斩杀
 		if self.db.profile.timing.starfire.balance and Buff:FindUnit("万物平衡") then
-			-- 有万物平衡，打星火术（愤怒有弹道时间）
 			CastSpellByName("星火术")
 		else
 			CastSpellByName("愤怒")
@@ -535,6 +573,11 @@ function DruidBird:Eclipse()
 	else
 		-- 抉择施法
 		if eclipse.state == "日蚀" then
+			-- 切换神像
+			if self.db.profile.timing.idol then
+				self.helper:UseItem("月牙神像")
+			end
+
 			-- 日蚀阶段
 			if eclipse.time == 0 then
 				-- 有日蚀时
@@ -574,6 +617,11 @@ function DruidBird:Eclipse()
 				end
 			end
 		elseif eclipse.state == "月蚀" then
+			-- 切换神像
+			if self.db.profile.timing.idol then
+				self.helper:UseItem("潮汐神像")
+			end
+
 			-- 月蚀阶段
 			if eclipse.time == 0 then
 				-- 有月蚀时
@@ -612,18 +660,31 @@ function DruidBird:Eclipse()
 					CastSpellByName("星火术")
 				end
 			end
-		elseif self.db.profile.timing.insectSwarm.normal and self.helper:CanDebuff("虫群") then
-			-- 补虫群
-			CastSpellByName("虫群")
-		elseif self.db.profile.timing.moonfire.normal and self.helper:CanDebuff("月火术") then
-			-- 补月火
-			CastSpellByName("月火术")
-		elseif self.db.profile.timing.starfire.balance and Buff:FindUnit("万物平衡") then
-			-- 有万物平衡，打星火术（愤怒有弹道时间）
-			-- 这将导致进入月蚀阶段不长，可能还会进入日蚀阶段
-			CastSpellByName("星火术")
 		else
-			CastSpellByName("愤怒")
+			-- 切换神像
+			if self.db.profile.timing.idol then
+				self.helper:UseItem("月牙神像")
+			end
+
+			if self.db.profile.timing.insectSwarm.normal and self.helper:CanDebuff("虫群") then
+				-- 补虫群
+				CastSpellByName("虫群")
+			elseif self.db.profile.timing.moonfire.normal and self.helper:CanDebuff("月火术") then
+				-- 补月火
+				CastSpellByName("月火术")
+			elseif self.db.profile.timing.starfire.balance and Buff:FindUnit("万物平衡") then
+				-- 有万物平衡，打星火术（愤怒有弹道时间）
+				-- 这将导致进入月蚀阶段不长，可能还会进入日蚀阶段
+				if self.db.profile.timing.idol then
+					self.helper:UseItem("潮汐神像")
+				end
+				CastSpellByName("星火术")
+				if self.db.profile.timing.idol then
+					self.helper:UseItem("月牙神像")
+				end
+			else
+				CastSpellByName("愤怒")
+			end
 		end
 	end
 end
@@ -664,8 +725,8 @@ end
 虫群：降低命中2%、持续18秒自然伤害；造成伤害后有30%几率获得万物平衡
 月火术：立即伤害、持续18秒奥术伤害；造成伤害后有30%几率获得自然恩赐
 
-愤怒：造成自然伤害；造成致命一击后有概率获得月蚀
-星火术：施法时间3.5秒；造成奥术伤害；造成致命一击后有概率获得日蚀
+愤怒：造成自然伤害；造成致命一击后获得月蚀
+星火术：施法时间3.5秒；造成奥术伤害；造成致命一击后获得日蚀
 
 自然之赐：暴击触发，下个施法时间减少0.5秒
 万物平衡：下一次星火术施法时间减少0.8秒，可累积3次
